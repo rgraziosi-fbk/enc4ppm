@@ -1,0 +1,18 @@
+site_name: enc4ppm
+site_description: Encode data for predictive process monitoring
+site_author: Riccardo Grazioni
+repo_url: https://github.com/rgraziosi-fbk/enc4ppm
+nav:
+  - Home: index.md
+  - Example: example.md
+  - API Reference:
+      - base_encoder: reference/base_encoder.md
+docs_dir: docs
+theme:
+  name: material
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
