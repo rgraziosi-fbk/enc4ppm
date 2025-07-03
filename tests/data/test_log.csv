@@ -1,0 +1,13 @@
+CaseID,Activity,Timestamp
+Case001,Receive Order,01/01/2025 08:00
+Case001,Ship,01/01/2025 16:00
+Case001,Receive Payment,03/01/2025 10:00
+Case002,Receive Order,02/01/2025 12:00
+Case002,Contact Supplier,02/01/2025 17:30
+Case002,Ship,04/01/2025 10:10
+Case002,Receive Payment,05/01/2025 08:29
+Case003,Receive Order,02/01/2025 15:00
+Case003,Ship,02/01/2025 18:00
+Case003,Receive Payment,03/01/2025 10:00
+Case003,Order Returned,09/01/2025 10:00
+Case003,Issue Refund,10/01/2025 14:00

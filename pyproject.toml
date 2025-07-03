@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,13 +9,19 @@ description = "Encode data for predictive process monitoring"
 authors = [
     { name = "Riccardo Graziosi", email = "riccardo.graziosi97@gmail.com" }
 ]
-license = { text = "MIT" }
+license = "MIT"
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3"
 ]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/rgraziosi-fbk/enc4ppm"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
