@@ -39,6 +39,7 @@ class BaseEncoder(ABC):
         df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key])
 
         # Sort by start timestamp
+        # TODO: bugfix: if two cases start at the same time, then their events interleave in the sorted dataframe
         df['_first_timestamp'] = df.groupby(self.case_id_key)[self.timestamp_key].transform('min')
         df = df.sort_values(by=['_first_timestamp', self.case_id_key, self.timestamp_key]).reset_index(drop=True)
         df = df.drop(columns=['_first_timestamp'])

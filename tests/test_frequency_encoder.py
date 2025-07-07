@@ -109,7 +109,7 @@ def test_frequency_encoder(log, gt_encoded_log):
     encoded_log = frequency_encoder.encode(log, labeling_type=LabelingType.NEXT_ACTIVITY)
 
     assert len(gt_encoded_log) == len(encoded_log)
-    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 # +1 is label
+    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 # + 1 is label
 
     for row in gt_encoded_log:
         assert row in encoded_log.to_dict(orient='records')
