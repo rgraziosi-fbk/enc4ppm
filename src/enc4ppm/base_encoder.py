@@ -22,23 +22,47 @@ class BaseEncoder(ABC):
 
     def _preprocess_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
         if not isinstance(df, pd.DataFrame):
-            raise TypeError("Input must be a pandas DataFrame")
+            raise TypeError("df must be a pandas DataFrame")
         
         if df.empty:
-            raise ValueError("Input DataFrame cannot be empty")
+            raise ValueError("df cannot be empty")
         
         for col in [self.case_id_key, self.activity_key, self.timestamp_key]:
             if col not in df.columns:
-                raise ValueError(f"Input DataFrame must contain column '{col}'")
+                raise ValueError(f"df must contain column '{col}'")
             
         if not isinstance(labeling_type, LabelingType):
-            raise TypeError(f"labeling_type must be a valid LabelingType: {[e.name for e in LabelingType]}")
+            raise TypeError(f'labeling_type must be a valid LabelingType: {[e.name for e in LabelingType]}')
             
         # Cast timestamp column to datetime
         df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key])
 
         # Save original df for later use
         self.original_df = df
+
+        return df
+
+    def _include_latest_payload(self, df: pd.DataFrame, attributes: str | list = 'all'):
+        if attributes == None: return df
+
+        if isinstance(attributes, str) and attributes != 'all':
+            raise ValueError("Since attributes is set to a string, then it must be set to the value 'all'. Otherwise, set it to a list of strings indicating the attributes you want to consider.")
+        
+        if isinstance(attributes, list):
+            for payload_attribute in attributes:
+                if not isinstance(payload_attribute, str):
+                    raise ValueError('Since attributes is a list, it must contain only string elements')
+                
+                if payload_attribute not in self.original_df.columns:
+                    raise ValueError(f"attributes contains value '{payload_attribute}', which cannot be found in the log")
+        
+        for payload_attribute in attributes:
+            attribute_values = []
+            
+            for _, row in df.iterrows():
+                attribute_values.append(self.original_df.loc[row[self.ORIGINAL_INDEX_KEY], payload_attribute])
+
+            df[f'{payload_attribute}_latest'] = attribute_values
 
         return df
 

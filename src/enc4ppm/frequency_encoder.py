@@ -1,7 +1,8 @@
 import pandas as pd
+from pandas.api.types import is_object_dtype
 
 from .base_encoder import BaseEncoder
-from .constants import LabelingType
+from .constants import LabelingType, CategoricalEncoding
 
 class FrequencyEncoder(BaseEncoder):
     """
@@ -26,6 +27,9 @@ class FrequencyEncoder(BaseEncoder):
     Args:
         df: DataFrame to encode.
         labeling_type: Label type to apply to examples.
+        include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
+        attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
+        categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
 
     Returns:
         The encoded DataFrame.
@@ -34,9 +38,16 @@ class FrequencyEncoder(BaseEncoder):
         self,
         df: pd.DataFrame,
         *,
-        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY
+        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        include_latest_payload: bool = False,
+        attributes: str | list = 'all',
+        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         df = super()._preprocess_log(df, labeling_type=labeling_type)
+
+        # TODO: remove duplication (see simple_index_encoder.py)
+        if include_latest_payload and attributes == 'all':
+            attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
         
         grouped = df.groupby(self.case_id_key)
         activities = df[self.activity_key].unique().tolist()
@@ -62,6 +73,16 @@ class FrequencyEncoder(BaseEncoder):
 
         encoded_df = pd.DataFrame(rows)
         
+        if include_latest_payload:
+            encoded_df = super()._include_latest_payload(encoded_df, attributes=attributes)
+
+            if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
+                encoded_df = pd.get_dummies(
+                    encoded_df,
+                    columns=[f'{attribute}_latest' for attribute in attributes if is_object_dtype(encoded_df[f'{attribute}_latest'])],
+                    drop_first=True,
+                )
+
         encoded_df = super()._label_log(encoded_df, labeling_type=labeling_type)
         encoded_df = super()._postprocess_log(encoded_df)
 

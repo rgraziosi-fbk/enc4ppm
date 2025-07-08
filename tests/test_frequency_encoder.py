@@ -109,6 +109,122 @@ def gt_encoded_log():
         },
     ]
 
+@pytest.fixture
+def gt_encoded_log_latest_payload():
+    return [
+        # Case001
+        {
+            CASE_ID_KEY: 'Case001',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerA',
+            'Amount_latest': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case001',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerA',
+            'Amount_latest': 0,
+            'label': 'Receive Payment',
+        },
+        # Case002
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerB',
+            'Amount_latest': 0,
+            'label': 'Contact Supplier',
+        },
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 1,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerB',
+            'Amount_latest': -20,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 1,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerB',
+            'Amount_latest': 0,
+            'label': 'Receive Payment',
+        },
+        # Case003
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerA',
+            'Amount_latest': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerA',
+            'Amount_latest': 0,
+            'label': 'Receive Payment',
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerA',
+            'Amount_latest': 300,
+            'label': 'Order Returned',
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 1,
+            'Issue Refund': 0,
+            'Customer_latest': 'CustomerA',
+            'Amount_latest': 0,
+            'label': 'Issue Refund',
+        },
+    ]
+
 def test_frequency_encoder(log, gt_encoded_log):
     frequency_encoder = FrequencyEncoder(
         case_id_key=CASE_ID_KEY,
@@ -121,4 +237,24 @@ def test_frequency_encoder(log, gt_encoded_log):
     assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 # + 1 is case id, + 1 is label
 
     for row in gt_encoded_log:
+        assert row in encoded_log.to_dict(orient='records')
+
+def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
+    frequency_encoder = FrequencyEncoder(
+        case_id_key=CASE_ID_KEY,
+        activity_key=ACTIVITY_KEY,
+        timestamp_key=TIMESTAMP_KEY,
+    )
+
+    encoded_log = frequency_encoder.encode(
+        log,
+        labeling_type=LabelingType.NEXT_ACTIVITY,
+        include_latest_payload=True,
+        attributes='all',
+    )
+
+    assert len(gt_encoded_log_latest_payload) == len(encoded_log)
+    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 + 2 # + 1 is case id, + 1 is label, + 2 are attributes
+
+    for row in gt_encoded_log_latest_payload:
         assert row in encoded_log.to_dict(orient='records')
