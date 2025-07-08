@@ -51,7 +51,7 @@ class FrequencyEncoder(BaseEncoder):
                 counts = prefix[self.activity_key].value_counts()
 
                 row = {
-                    self.ORIGINAL_CASE_ID_KEY: case_id,
+                    self.case_id_key: case_id,
                     self.ORIGINAL_INDEX_KEY: prefix.index[-1],
                 }
 

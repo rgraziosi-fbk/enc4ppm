@@ -16,6 +16,7 @@ def gt_encoded_log():
     return [
         # Case001
         {
+            CASE_ID_KEY: 'Case001',
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -25,6 +26,7 @@ def gt_encoded_log():
             'label': 'Ship',
         },
         {
+            CASE_ID_KEY: 'Case001',
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -35,6 +37,7 @@ def gt_encoded_log():
         },
         # Case002
         {
+            CASE_ID_KEY: 'Case002',
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -44,6 +47,7 @@ def gt_encoded_log():
             'label': 'Contact Supplier',
         },
         {
+            CASE_ID_KEY: 'Case002',
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -53,6 +57,7 @@ def gt_encoded_log():
             'label': 'Ship',
         },
         {
+            CASE_ID_KEY: 'Case002',
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -63,6 +68,7 @@ def gt_encoded_log():
         },
         # Case003
         {
+            CASE_ID_KEY: 'Case003',
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -72,6 +78,7 @@ def gt_encoded_log():
             'label': 'Ship',
         },
         {
+            CASE_ID_KEY: 'Case003',
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -81,6 +88,7 @@ def gt_encoded_log():
             'label': 'Receive Payment',
         },
         {
+            CASE_ID_KEY: 'Case003',
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -90,6 +98,7 @@ def gt_encoded_log():
             'label': 'Order Returned',
         },
         {
+            CASE_ID_KEY: 'Case003',
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -109,7 +118,7 @@ def test_frequency_encoder(log, gt_encoded_log):
     encoded_log = frequency_encoder.encode(log, labeling_type=LabelingType.NEXT_ACTIVITY)
 
     assert len(gt_encoded_log) == len(encoded_log)
-    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 # + 1 is label
+    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 # + 1 is case id, + 1 is label
 
     for row in gt_encoded_log:
         assert row in encoded_log.to_dict(orient='records')

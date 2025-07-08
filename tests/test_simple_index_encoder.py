@@ -16,6 +16,7 @@ def gt_encoded_log():
     return [
         # Case001
         {
+            CASE_ID_KEY: 'Case001',
             'event_1': 'Receive Order',
             'event_2': 'PADDING',
             'event_3': 'PADDING',
@@ -24,6 +25,7 @@ def gt_encoded_log():
             'label': 'Ship',
         },
         {
+            CASE_ID_KEY: 'Case001',
             'event_1': 'Receive Order',
             'event_2': 'Ship',
             'event_3': 'PADDING',
@@ -33,6 +35,7 @@ def gt_encoded_log():
         },
         # Case002
         {
+            CASE_ID_KEY: 'Case002',
             'event_1': 'Receive Order',
             'event_2': 'PADDING',
             'event_3': 'PADDING',
@@ -41,6 +44,7 @@ def gt_encoded_log():
             'label': 'Contact Supplier',
         },
         {
+            CASE_ID_KEY: 'Case002',
             'event_1': 'Receive Order',
             'event_2': 'Contact Supplier',
             'event_3': 'PADDING',
@@ -49,6 +53,7 @@ def gt_encoded_log():
             'label': 'Ship',
         },
         {
+            CASE_ID_KEY: 'Case002',
             'event_1': 'Receive Order',
             'event_2': 'Contact Supplier',
             'event_3': 'Ship',
@@ -58,6 +63,7 @@ def gt_encoded_log():
         },
         # Case003
         {
+            CASE_ID_KEY: 'Case003',
             'event_1': 'Receive Order',
             'event_2': 'PADDING',
             'event_3': 'PADDING',
@@ -66,6 +72,7 @@ def gt_encoded_log():
             'label': 'Ship',
         },
         {
+            CASE_ID_KEY: 'Case003',
             'event_1': 'Receive Order',
             'event_2': 'Ship',
             'event_3': 'PADDING',
@@ -74,6 +81,7 @@ def gt_encoded_log():
             'label': 'Receive Payment',
         },
         {
+            CASE_ID_KEY: 'Case003',
             'event_1': 'Receive Order',
             'event_2': 'Ship',
             'event_3': 'Receive Payment',
@@ -82,6 +90,7 @@ def gt_encoded_log():
             'label': 'Order Returned',
         },
         {
+            CASE_ID_KEY: 'Case003',
             'event_1': 'Receive Order',
             'event_2': 'Ship',
             'event_3': 'Receive Payment',
@@ -100,7 +109,7 @@ def test_simple_index_encoder(log, gt_encoded_log):
     encoded_log = simple_index_encoder.encode(log, labeling_type=LabelingType.NEXT_ACTIVITY)
 
     assert len(gt_encoded_log) == len(encoded_log)
-    assert len(encoded_log.columns) == 5 + 1 # 5 is max trace length, 1 is label
+    assert len(encoded_log.columns) == 5 + 1 + 1 # 5 is max trace length, + 1 is case id, + 1 is label
 
     print(f'encoded log')
     print(encoded_log.to_dict(orient='records'))

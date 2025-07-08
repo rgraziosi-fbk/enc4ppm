@@ -4,7 +4,6 @@ import pandas as pd
 from .constants import LabelingType
 
 class BaseEncoder(ABC):
-    ORIGINAL_CASE_ID_KEY = 'OriginalCaseId'
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
     LABEL_KEY = 'label'
     
@@ -49,7 +48,7 @@ class BaseEncoder(ABC):
             
             for _, row in df.iterrows():
                 same_case = df[
-                    (df[self.ORIGINAL_CASE_ID_KEY] == row[self.ORIGINAL_CASE_ID_KEY]) &
+                    (df[self.case_id_key] == row[self.case_id_key]) &
                     (df[self.ORIGINAL_INDEX_KEY] > row[self.ORIGINAL_INDEX_KEY])
                 ]
                 if not same_case.empty:
@@ -68,7 +67,7 @@ class BaseEncoder(ABC):
         df = df.sort_values(by=self.ORIGINAL_INDEX_KEY).reset_index(drop=True)
 
         # Drop unnecessary data
-        df = df.drop(columns=[self.ORIGINAL_CASE_ID_KEY, self.ORIGINAL_INDEX_KEY])
+        df = df.drop(columns=[self.ORIGINAL_INDEX_KEY])
         df = df.dropna(subset=[self.LABEL_KEY]).reset_index(drop=True)
 
         return df
