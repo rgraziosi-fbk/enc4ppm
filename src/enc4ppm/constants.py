@@ -5,3 +5,7 @@ class LabelingType(Enum):
     REMAINING_TIME = 'remaining_time'
     OUTCOME = 'outcome'
     CUSTOM = 'custom'
+
+class CategoricalEncoding(Enum):
+    STRING = 'string'
+    ONE_HOT = 'one_hot'

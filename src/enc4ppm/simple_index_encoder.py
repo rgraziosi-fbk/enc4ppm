@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .base_encoder import BaseEncoder
-from .constants import LabelingType
+from .constants import LabelingType, CategoricalEncoding
 
 class SimpleIndexEncoder(BaseEncoder):
     PADDING_VALUE = 'PADDING'
@@ -29,6 +29,7 @@ class SimpleIndexEncoder(BaseEncoder):
     Args:
         df: DataFrame to encode.
         labeling_type: Label type to apply to examples.
+        activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
 
     Returns:
         The encoded DataFrame.
@@ -37,7 +38,8 @@ class SimpleIndexEncoder(BaseEncoder):
         self,
         df: pd.DataFrame,
         *,
-        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY
+        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         df = super()._preprocess_log(df, labeling_type=labeling_type)
         
@@ -67,5 +69,12 @@ class SimpleIndexEncoder(BaseEncoder):
 
         encoded_df = super()._label_log(encoded_df, labeling_type=labeling_type)
         encoded_df = super()._postprocess_log(encoded_df)
+
+        if activity_encoding == CategoricalEncoding.ONE_HOT:
+            encoded_df = pd.get_dummies(
+                encoded_df,
+                columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)],
+                drop_first=True,
+            )
 
         return encoded_df
