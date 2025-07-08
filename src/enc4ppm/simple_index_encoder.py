@@ -39,36 +39,33 @@ class SimpleIndexEncoder(BaseEncoder):
         *,
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY
     ) -> pd.DataFrame:
-        df = super().validate_and_prepare_log(df, labeling_type=labeling_type)
+        df = super()._preprocess_log(df, labeling_type=labeling_type)
         
-        # Custom logic
-        cases = df[self.case_id_key].unique().tolist()
-        max_prefix_length = df.groupby(self.case_id_key).size().max()
+        grouped = df.groupby(self.case_id_key)
+        max_prefix_length = grouped.size().max()
 
-        encoded_df = pd.DataFrame(
-            columns=[self.ORIGINAL_CASE_ID_KEY, self.ORIGINAL_INDEX_KEY] +
-                [f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)]
-        )
+        rows = []
 
-        for prefix_length in range(1, max_prefix_length+1):
-            for case in cases:
-                case_events = df[df[self.case_id_key] == case]
-                if len(case_events) < prefix_length: continue
-                case_events = case_events.iloc[:prefix_length]
+        for case_id, case_events in grouped:
+            case_events = case_events.sort_values(self.timestamp_key).reset_index()
 
-                encoded_row = {
-                    self.ORIGINAL_CASE_ID_KEY: case,
-                    self.ORIGINAL_INDEX_KEY: case_events.index[prefix_length-1],
-                    **{ f'{self.EVENT_COL_NAME}_{i}': self.PADDING_VALUE for i in range(1, max_prefix_length+1) },
+            for prefix_length in range(1, len(case_events)+1):
+                row = {
+                    self.ORIGINAL_CASE_ID_KEY: case_id,
+                    self.ORIGINAL_INDEX_KEY: case_events.loc[prefix_length-1, 'index'],
                 }
 
-                case_events = case_events.reset_index(drop=True)
+                for i in range(1, max_prefix_length+1):
+                    if i <= prefix_length:
+                        row[f'{self.EVENT_COL_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
+                    else:
+                        row[f'{self.EVENT_COL_NAME}_{i}'] = self.PADDING_VALUE
+                
+                rows.append(row)
 
-                for i, case_event in case_events.iterrows():
-                    encoded_row[f'{self.EVENT_COL_NAME}_{i+1}'] = case_event[self.activity_key]
+        encoded_df = pd.DataFrame(rows)
 
-                encoded_df = pd.concat([encoded_df, pd.DataFrame([encoded_row])], ignore_index=True)
-
-        encoded_df = self.label_log(encoded_df, labeling_type=labeling_type)
+        encoded_df = super()._label_log(encoded_df, labeling_type=labeling_type)
+        encoded_df = super()._postprocess_log(encoded_df)
 
         return encoded_df

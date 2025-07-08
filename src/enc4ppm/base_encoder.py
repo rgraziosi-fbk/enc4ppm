@@ -21,7 +21,7 @@ class BaseEncoder(ABC):
     def encode(self, df: pd.DataFrame) -> pd.DataFrame:
         pass
 
-    def validate_and_prepare_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
+    def _preprocess_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
         if not isinstance(df, pd.DataFrame):
             raise TypeError("Input must be a pandas DataFrame")
         
@@ -38,20 +38,15 @@ class BaseEncoder(ABC):
         # Cast timestamp column to datetime
         df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key])
 
-        # Sort by start timestamp
-        # TODO: bugfix: if two cases start at the same time, then their events interleave in the sorted dataframe
-        df['_first_timestamp'] = df.groupby(self.case_id_key)[self.timestamp_key].transform('min')
-        df = df.sort_values(by=['_first_timestamp', self.case_id_key, self.timestamp_key]).reset_index(drop=True)
-        df = df.drop(columns=['_first_timestamp'])
-
         # Save original df for later use
         self.original_df = df
 
         return df
 
-    def label_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
+    def _label_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
         if labeling_type == LabelingType.NEXT_ACTIVITY:
             labels = []
+            
             for _, row in df.iterrows():
                 same_case = df[
                     (df[self.ORIGINAL_CASE_ID_KEY] == row[self.ORIGINAL_CASE_ID_KEY]) &
@@ -63,9 +58,13 @@ class BaseEncoder(ABC):
                 else:
                     label = None
                 labels.append(label)
+            
             df[self.LABEL_KEY] = labels
 
-        # Restore the original ordering
+        return df
+    
+    def _postprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
+        # Restore original ordering
         df = df.sort_values(by=self.ORIGINAL_INDEX_KEY).reset_index(drop=True)
 
         # Drop unnecessary data
