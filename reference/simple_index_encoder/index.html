@@ -13,10 +13,8 @@
       
       
       
-        <link rel="prev" href="../../example/">
+        <link rel="prev" href="../frequency_encoder/">
       
-      
-        <link rel="next" href="../simple_index_encoder/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -24,7 +22,7 @@
     
     
       
-        <title>frequency_encoder - enc4ppm</title>
+        <title>simple_index_encoder - enc4ppm</title>
       
     
     
@@ -68,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#frequencyencoder-module-api-reference" class="md-skip">
+        <a href="#simpleindexencoder-module-api-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              frequency_encoder
+              simple_index_encoder
             
           </span>
         </div>
@@ -305,6 +303,29 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../frequency_encoder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    frequency_encoder
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -322,7 +343,7 @@
   
   
   <span class="md-ellipsis">
-    frequency_encoder
+    simple_index_encoder
     
   </span>
   
@@ -335,7 +356,7 @@
   
   
   <span class="md-ellipsis">
-    frequency_encoder
+    simple_index_encoder
     
   </span>
   
@@ -358,20 +379,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#enc4ppm.frequency_encoder" class="md-nav__link">
+  <a href="#enc4ppm.simple_index_encoder" class="md-nav__link">
     <span class="md-ellipsis">
-      frequency_encoder
+      simple_index_encoder
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#enc4ppm.frequency_encoder.FrequencyEncoder" class="md-nav__link">
+  <a href="#enc4ppm.simple_index_encoder.SimpleIndexEncoder" class="md-nav__link">
     <span class="md-ellipsis">
-      FrequencyEncoder
+      SimpleIndexEncoder
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="SimpleIndexEncoder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enc4ppm.simple_index_encoder.SimpleIndexEncoder.EVENT_COL_NAME" class="md-nav__link">
+    <span class="md-ellipsis">
+      EVENT_COL_NAME
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -379,29 +415,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../simple_index_encoder/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    simple_index_encoder
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -441,20 +454,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#enc4ppm.frequency_encoder" class="md-nav__link">
+  <a href="#enc4ppm.simple_index_encoder" class="md-nav__link">
     <span class="md-ellipsis">
-      frequency_encoder
+      simple_index_encoder
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#enc4ppm.frequency_encoder.FrequencyEncoder" class="md-nav__link">
+  <a href="#enc4ppm.simple_index_encoder.SimpleIndexEncoder" class="md-nav__link">
     <span class="md-ellipsis">
-      FrequencyEncoder
+      SimpleIndexEncoder
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="SimpleIndexEncoder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enc4ppm.simple_index_encoder.SimpleIndexEncoder.EVENT_COL_NAME" class="md-nav__link">
+    <span class="md-ellipsis">
+      EVENT_COL_NAME
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -477,14 +505,14 @@
   
 
 
-<h1 id="frequencyencoder-module-api-reference">FrequencyEncoder Module API Reference</h1>
+<h1 id="simpleindexencoder-module-api-reference">SimpleIndexEncoder Module API Reference</h1>
 
 
 <div class="doc doc-object doc-module">
 
 
 
-<a id="enc4ppm.frequency_encoder"></a>
+<a id="enc4ppm.simple_index_encoder"></a>
     <div class="doc doc-contents first">
 
 
@@ -508,8 +536,8 @@
 
 
 
-<h2 id="enc4ppm.frequency_encoder.FrequencyEncoder" class="doc doc-heading">
-            <code>FrequencyEncoder</code>
+<h2 id="enc4ppm.simple_index_encoder.SimpleIndexEncoder" class="doc doc-heading">
+            <code>SimpleIndexEncoder</code>
 
 
 </h2>
@@ -520,87 +548,6 @@
               Bases: <code><span title="enc4ppm.base_encoder.BaseEncoder">BaseEncoder</span></code></p>
 
 
-        <p>Initialize the FrequencyEncoder.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>labeling_type</code>
-            </td>
-            <td>
-                  <code><span title="enc4ppm.constants.LabelingType">LabelingType</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Label type to apply to examples.</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="enc4ppm.constants.LabelingType.NEXT_ACTIVITY">NEXT_ACTIVITY</span></code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>case_id_key</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Column name for case identifiers.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;case:concept:name&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>activity_key</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Column name for activity names.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;concept:name&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>timestamp_key</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Column name for timestamps.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;time:timestamp&#39;</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
 
 
 
@@ -608,8 +555,9 @@
 
 
               <details class="quote">
-                <summary>Source code in <code>src/enc4ppm/frequency_encoder.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 7</span>
+                <summary>Source code in <code>src/enc4ppm/simple_index_encoder.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 6</span>
+<span class="normal"> 7</span>
 <span class="normal"> 8</span>
 <span class="normal"> 9</span>
 <span class="normal">10</span>
@@ -684,22 +632,12 @@
 <span class="normal">79</span>
 <span class="normal">80</span>
 <span class="normal">81</span>
-<span class="normal">82</span>
-<span class="normal">83</span>
-<span class="normal">84</span>
-<span class="normal">85</span>
-<span class="normal">86</span>
-<span class="normal">87</span>
-<span class="normal">88</span>
-<span class="normal">89</span>
-<span class="normal">90</span>
-<span class="normal">91</span>
-<span class="normal">92</span>
-<span class="normal">93</span>
-<span class="normal">94</span>
-<span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FrequencyEncoder</span><span class="p">(</span><span class="n">BaseEncoder</span><span class="p">):</span>
+<span class="normal">82</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SimpleIndexEncoder</span><span class="p">(</span><span class="n">BaseEncoder</span><span class="p">):</span>
+    <span class="n">PADDING_VALUE</span> <span class="o">=</span> <span class="s1">&#39;PADDING&#39;</span>
+    <span class="n">EVENT_COL_NAME</span> <span class="o">=</span> <span class="s1">&#39;event&#39;</span>
+
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initialize the FrequencyEncoder.</span>
+<span class="sd">    Initialize the SimpleIndexEncoder.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        labeling_type: Label type to apply to examples.</span>
@@ -713,18 +651,15 @@
             <span class="n">labeling_type</span><span class="p">:</span> <span class="n">LabelingType</span> <span class="o">=</span> <span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span>
             <span class="n">case_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span>
             <span class="n">activity_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;concept:name&#39;</span><span class="p">,</span>
-            <span class="n">timestamp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;time:timestamp&#39;</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timestamp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;time:timestamp&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">labeling_type</span><span class="p">,</span> <span class="n">case_id_key</span><span class="p">,</span> <span class="n">activity_key</span><span class="p">,</span> <span class="n">timestamp_key</span><span class="p">)</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Encode the provided DataFrame with frequency encoding and apply the specified labeling.</span>
+<span class="sd">    Encode the provided DataFrame with simple-index encoding and apply the specified labeling.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        df: DataFrame to encode.</span>
-<span class="sd">        include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.</span>
-<span class="sd">        attributes: Which attributes to consider. Can be either &#39;all&#39; (all trace and event attributes will be encoded) or a list of the attributes to consider.</span>
-<span class="sd">        categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</span>
+<span class="sd">        activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The encoded DataFrame.</span>
@@ -733,57 +668,45 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
-        <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+        <span class="n">activity_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_encode_template</span><span class="p">(</span>
-            <span class="n">df</span><span class="p">,</span>
-            <span class="n">include_latest_payload</span><span class="o">=</span><span class="n">include_latest_payload</span><span class="p">,</span>
-            <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
-            <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">categorical_attributes_encoding</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_encode_template</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">activity_encoding</span><span class="o">=</span><span class="n">activity_encoding</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_encode</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-        <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-        <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span>
-        <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span><span class="p">,</span>
+        <span class="n">activity_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_id_key</span><span class="p">)</span>
-        <span class="n">activities</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">activity_key</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">max_prefix_length</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
 
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">for</span> <span class="n">case_id</span><span class="p">,</span> <span class="n">case_events</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
-            <span class="n">case_events</span> <span class="o">=</span> <span class="n">case_events</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_key</span><span class="p">)</span>
+            <span class="n">case_events</span> <span class="o">=</span> <span class="n">case_events</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_key</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
 
             <span class="k">for</span> <span class="n">prefix_length</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">case_events</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="n">case_events</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">prefix_length</span><span class="p">]</span>
-                <span class="n">counts</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">activity_key</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
-
                 <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">case_id_key</span><span class="p">:</span> <span class="n">case_id</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ORIGINAL_INDEX_KEY</span><span class="p">:</span> <span class="n">prefix</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ORIGINAL_INDEX_KEY</span><span class="p">:</span> <span class="n">case_events</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">prefix_length</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">],</span>
                 <span class="p">}</span>
 
-                <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">activities</span><span class="p">:</span>
-                    <span class="n">row</span><span class="p">[</span><span class="n">activity</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_prefix_length</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">prefix_length</span><span class="p">:</span>
+                        <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">EVENT_COL_NAME</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">case_events</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">activity_key</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">row</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">EVENT_COL_NAME</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PADDING_VALUE</span>
 
                 <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="n">encoded_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">include_latest_payload</span><span class="p">:</span>
-            <span class="n">encoded_df</span><span class="p">,</span> <span class="n">attributes</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_include_latest_payload</span><span class="p">(</span><span class="n">encoded_df</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">categorical_attributes_encoding</span> <span class="o">==</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">ONE_HOT</span><span class="p">:</span>
-                <span class="n">encoded_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span>
-                    <span class="n">encoded_df</span><span class="p">,</span>
-                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s1">_latest&#39;</span> <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span> <span class="k">if</span> <span class="n">is_object_dtype</span><span class="p">(</span><span class="n">encoded_df</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s1">_latest&#39;</span><span class="p">])],</span>
-                    <span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">activity_encoding</span> <span class="o">==</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">ONE_HOT</span><span class="p">:</span>
+            <span class="n">encoded_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span>
+                <span class="n">encoded_df</span><span class="p">,</span>
+                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">EVENT_COL_NAME</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_prefix_length</span><span class="o">+</span><span class="mi">1</span><span class="p">)],</span>
+                <span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">encoded_df</span>
 </code></pre></div></td></tr></table></div>
@@ -798,6 +721,104 @@
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="enc4ppm.simple_index_encoder.SimpleIndexEncoder.EVENT_COL_NAME" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">EVENT_COL_NAME</span> <span class="o">=</span> <span class="s1">&#39;event&#39;</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the SimpleIndexEncoder.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>labeling_type</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Label type to apply to examples.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>case_id_key</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column name for case identifiers.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>activity_key</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column name for activity names.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>timestamp_key</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column name for timestamps.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
 
 
 
