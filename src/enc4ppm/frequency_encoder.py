@@ -44,10 +44,6 @@ class FrequencyEncoder(BaseEncoder):
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         df = super()._preprocess_log(df, labeling_type=labeling_type)
-
-        # TODO: remove duplication (see simple_index_encoder.py)
-        if include_latest_payload and attributes == 'all':
-            attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
         
         grouped = df.groupby(self.case_id_key)
         activities = df[self.activity_key].unique().tolist()
@@ -74,7 +70,7 @@ class FrequencyEncoder(BaseEncoder):
         encoded_df = pd.DataFrame(rows)
         
         if include_latest_payload:
-            encoded_df = super()._include_latest_payload(encoded_df, attributes=attributes)
+            encoded_df, attributes = super()._include_latest_payload(encoded_df, attributes=attributes)
 
             if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
                 encoded_df = pd.get_dummies(

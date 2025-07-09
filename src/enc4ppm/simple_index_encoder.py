@@ -67,14 +67,14 @@ class SimpleIndexEncoder(BaseEncoder):
 
         encoded_df = pd.DataFrame(rows)
 
-        encoded_df = super()._label_log(encoded_df, labeling_type=labeling_type)
-        encoded_df = super()._postprocess_log(encoded_df)
-
         if activity_encoding == CategoricalEncoding.ONE_HOT:
             encoded_df = pd.get_dummies(
                 encoded_df,
                 columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)],
                 drop_first=True,
             )
+
+        encoded_df = super()._label_log(encoded_df, labeling_type=labeling_type)
+        encoded_df = super()._postprocess_log(encoded_df)
 
         return encoded_df

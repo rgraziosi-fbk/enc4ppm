@@ -56,6 +56,10 @@ class BaseEncoder(ABC):
                 if payload_attribute not in self.original_df.columns:
                     raise ValueError(f"attributes contains value '{payload_attribute}', which cannot be found in the log")
         
+        # If attributes set to 'all', obtain all available attributes from dataframe
+        if attributes == 'all':
+            attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
+
         for payload_attribute in attributes:
             attribute_values = []
             
@@ -64,7 +68,7 @@ class BaseEncoder(ABC):
 
             df[f'{payload_attribute}_latest'] = attribute_values
 
-        return df
+        return df, attributes
 
     def _label_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
         if labeling_type == LabelingType.NEXT_ACTIVITY:
