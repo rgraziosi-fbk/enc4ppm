@@ -7,6 +7,7 @@ nav:
   - Example: example.md
   - API Reference:
       - frequency_encoder: reference/frequency_encoder.md
+      - simple_index_encoder: reference/simple_index_encoder.md
 docs_dir: docs
 theme:
   name: material
