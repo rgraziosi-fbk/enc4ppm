@@ -15,6 +15,12 @@ import enc4ppm
 # ...
 ```
 
+## Development
+
+### Documentation
+
+Documentation is provided by mkdocs. To build and push the documentation website to GitHub, run the following command: `mkdocs gh-deploy`.
+
 ## License
 
 MIT License
