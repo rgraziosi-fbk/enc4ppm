@@ -19,18 +19,20 @@ class BaseEncoder(ABC):
         self.activity_key = activity_key
         self.timestamp_key = timestamp_key
 
-    """
-    The _encode abstract method must be defined by subclasses and must contain the specific encoding logic of the encoder.
-    """
+
     @abstractmethod
     def _encode(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        """
+        The _encode abstract method must be defined by subclasses and must contain the specific encoding logic of the encoder.
+        """
         pass
 
-    """
-    The _encode_template method is a template method which performs both common operations shared amongs all encoders and the specific logic of each encoder.
-    In particular, common operations are: _preprocess_log, _label_log and _postprocess_log; specific encoding is performed by subclass _encode method.
-    """
+    
     def _encode_template(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        """
+        The _encode_template method is a template method which performs both common operations shared amongs all encoders and the specific logic of each encoder.
+        In particular, common operations are: _preprocess_log, _label_log and _postprocess_log; specific encoding is performed by subclass _encode method.
+        """
         df = self._preprocess_log(df, labeling_type=self.labeling_type)
 
         encoded_df = self._encode(df, **kwargs)
@@ -40,10 +42,11 @@ class BaseEncoder(ABC):
 
         return encoded_df
     
-    """
-    Common preprocessing logic shared by all encoders. The method validates the provided log and save it for later use.
-    """
+
     def _preprocess_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
+        """
+        Common preprocessing logic shared by all encoders. The method validates the provided log and save it for later use.
+        """
         if not isinstance(df, pd.DataFrame):
             raise TypeError("df must be a pandas DataFrame")
         
@@ -65,10 +68,11 @@ class BaseEncoder(ABC):
 
         return df
 
-    """
-    Common labeling logic shared by all encoders. The method labels each example of the encoded log.
-    """
+    
     def _label_log(self, df: pd.DataFrame, labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY) -> pd.DataFrame:
+        """
+        Common preprocessing logic shared by all encoders. The method validates the provided log and save it for later use.
+        """
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _label_log')
         
@@ -91,10 +95,11 @@ class BaseEncoder(ABC):
 
         return df
     
-    """
-    Common postprocessing logic shared by all encoders. The method restores original ordering and drops unnecessary data.
-    """
+    
     def _postprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Common postprocessing logic shared by all encoders. The method restores original ordering and drops unnecessary data.
+        """
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _postprocess_log')
         
@@ -107,10 +112,11 @@ class BaseEncoder(ABC):
 
         return df
 
-    """
-    Add to an already encoded 
-    """
+    
     def _include_latest_payload(self, df: pd.DataFrame, attributes: str | list = 'all'):
+        """
+        Add latest payload attributes to encoded DataFrame. 
+        """
         if attributes == None: return df
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _include_latest_payload')

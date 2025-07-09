@@ -7,41 +7,44 @@ class SimpleIndexEncoder(BaseEncoder):
     PADDING_VALUE = 'PADDING'
     EVENT_COL_NAME = 'event'
 
-    """
-    Initialize the SimpleIndexEncoder.
-
-    Args:
-        labeling_type: Label type to apply to examples.
-        case_id_key: Column name for case identifiers.
-        activity_key: Column name for activity names.
-        timestamp_key: Column name for timestamps.
-    """
     def __init__(
-            self,
-            *,
-            labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
-            case_id_key: str = 'case:concept:name',
-            activity_key: str = 'concept:name',
-            timestamp_key: str = 'time:timestamp') -> None:
+        self,
+        *,
+        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        case_id_key: str = 'case:concept:name',
+        activity_key: str = 'concept:name',
+        timestamp_key: str = 'time:timestamp',
+    ) -> None:
+        """
+        Initialize the SimpleIndexEncoder.
+
+        Args:
+            labeling_type: Label type to apply to examples.
+            case_id_key: Column name for case identifiers.
+            activity_key: Column name for activity names.
+            timestamp_key: Column name for timestamps.
+        """
         super().__init__(labeling_type, case_id_key, activity_key, timestamp_key)
 
-    """
-    Encode the provided DataFrame with simple-index encoding and apply the specified labeling.
-
-    Args:
-        df: DataFrame to encode.
-        activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
-
-    Returns:
-        The encoded DataFrame.
-    """
+    
     def encode(
         self,
         df: pd.DataFrame,
         *,
         activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
+        """
+        Encode the provided DataFrame with simple-index encoding and apply the specified labeling.
+
+        Args:
+            df: DataFrame to encode.
+            activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
+
+        Returns:
+            The encoded DataFrame.
+        """
         return super()._encode_template(df, activity_encoding=activity_encoding)
+
 
     def _encode(
         self,

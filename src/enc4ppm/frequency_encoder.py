@@ -5,37 +5,27 @@ from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding
 
 class FrequencyEncoder(BaseEncoder):
-    """
-    Initialize the FrequencyEncoder.
 
-    Args:
-        labeling_type: Label type to apply to examples.
-        case_id_key: Column name for case identifiers.
-        activity_key: Column name for activity names.
-        timestamp_key: Column name for timestamps.
-    """
     def __init__(
-            self,
-            *,
-            labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
-            case_id_key: str = 'case:concept:name',
-            activity_key: str = 'concept:name',
-            timestamp_key: str = 'time:timestamp',
-        ) -> None:
+        self,
+        *,
+        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        case_id_key: str = 'case:concept:name',
+        activity_key: str = 'concept:name',
+        timestamp_key: str = 'time:timestamp',
+    ) -> None:
+        """
+        Initialize the FrequencyEncoder.
+
+        Args:
+            labeling_type: Label type to apply to examples.
+            case_id_key: Column name for case identifiers.
+            activity_key: Column name for activity names.
+            timestamp_key: Column name for timestamps.
+        """
         super().__init__(labeling_type, case_id_key, activity_key, timestamp_key)
 
-    """
-    Encode the provided DataFrame with frequency encoding and apply the specified labeling.
-
-    Args:
-        df: DataFrame to encode.
-        include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
-        attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
-        categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
-
-    Returns:
-        The encoded DataFrame.
-    """
+    
     def encode(
         self,
         df: pd.DataFrame,
@@ -44,12 +34,25 @@ class FrequencyEncoder(BaseEncoder):
         attributes: str | list = 'all',
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
+        """
+        Encode the provided DataFrame with frequency encoding and apply the specified labeling.
+
+        Args:
+            df: DataFrame to encode.
+            include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
+            attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
+            categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
+
+        Returns:
+            The encoded DataFrame.
+        """
         return super()._encode_template(
             df,
             include_latest_payload=include_latest_payload,
             attributes=attributes,
             categorical_attributes_encoding=categorical_attributes_encoding,
         )
+
 
     def _encode(
         self,
