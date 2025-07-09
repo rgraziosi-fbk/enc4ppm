@@ -8,9 +8,10 @@ class SimpleIndexEncoder(BaseEncoder):
     EVENT_COL_NAME = 'event'
 
     """
-    Initialize the FrequencyEncoder.
+    Initialize the SimpleIndexEncoder.
 
     Args:
+        labeling_type: Label type to apply to examples.
         case_id_key: Column name for case identifiers.
         activity_key: Column name for activity names.
         timestamp_key: Column name for timestamps.
@@ -18,17 +19,17 @@ class SimpleIndexEncoder(BaseEncoder):
     def __init__(
             self,
             *,
+            labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
             case_id_key: str = 'case:concept:name',
             activity_key: str = 'concept:name',
             timestamp_key: str = 'time:timestamp') -> None:
-        super().__init__(case_id_key, activity_key, timestamp_key)
+        super().__init__(labeling_type, case_id_key, activity_key, timestamp_key)
 
     """
     Encode the provided DataFrame with simple-index encoding and apply the specified labeling.
 
     Args:
         df: DataFrame to encode.
-        labeling_type: Label type to apply to examples.
         activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
 
     Returns:
@@ -38,11 +39,15 @@ class SimpleIndexEncoder(BaseEncoder):
         self,
         df: pd.DataFrame,
         *,
-        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
         activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
-        df = super()._preprocess_log(df, labeling_type=labeling_type)
-        
+        return super()._encode_template(df, activity_encoding=activity_encoding)
+
+    def _encode(
+        self,
+        df: pd.DataFrame,
+        activity_encoding: CategoricalEncoding,
+    ) -> pd.DataFrame:
         grouped = df.groupby(self.case_id_key)
         max_prefix_length = grouped.size().max()
 
@@ -73,8 +78,5 @@ class SimpleIndexEncoder(BaseEncoder):
                 columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)],
                 drop_first=True,
             )
-
-        encoded_df = super()._label_log(encoded_df, labeling_type=labeling_type)
-        encoded_df = super()._postprocess_log(encoded_df)
 
         return encoded_df

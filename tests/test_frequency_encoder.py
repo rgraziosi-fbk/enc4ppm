@@ -227,11 +227,12 @@ def gt_encoded_log_latest_payload():
 
 def test_frequency_encoder(log, gt_encoded_log):
     frequency_encoder = FrequencyEncoder(
+        labeling_type=LabelingType.NEXT_ACTIVITY,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
     )
-    encoded_log = frequency_encoder.encode(log, labeling_type=LabelingType.NEXT_ACTIVITY)
+    encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log) == len(encoded_log)
     assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 # + 1 is case id, + 1 is label
@@ -241,6 +242,7 @@ def test_frequency_encoder(log, gt_encoded_log):
 
 def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
     frequency_encoder = FrequencyEncoder(
+        labeling_type=LabelingType.NEXT_ACTIVITY,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
@@ -248,7 +250,6 @@ def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
 
     encoded_log = frequency_encoder.encode(
         log,
-        labeling_type=LabelingType.NEXT_ACTIVITY,
         include_latest_payload=True,
         attributes='all',
     )

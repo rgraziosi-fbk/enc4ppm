@@ -102,11 +102,12 @@ def gt_encoded_log():
 
 def test_simple_index_encoder(log, gt_encoded_log):
     simple_index_encoder = SimpleIndexEncoder(
+        labeling_type=LabelingType.NEXT_ACTIVITY,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
     )
-    encoded_log = simple_index_encoder.encode(log, labeling_type=LabelingType.NEXT_ACTIVITY)
+    encoded_log = simple_index_encoder.encode(log)
 
     assert len(gt_encoded_log) == len(encoded_log)
     assert len(encoded_log.columns) == 5 + 1 + 1 # 5 is max trace length, + 1 is case id, + 1 is label
