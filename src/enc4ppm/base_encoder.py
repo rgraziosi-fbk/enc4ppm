@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from pandas.api.types import is_object_dtype
 
-from .constants import LabelingType
+from .constants import LabelingType, CategoricalEncoding
 
 class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
     LABEL_KEY = 'label'
+    LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
     
     def __init__(
             self,
@@ -113,7 +115,12 @@ class BaseEncoder(ABC):
         return df
 
     
-    def _include_latest_payload(self, df: pd.DataFrame, attributes: str | list = 'all'):
+    def _include_latest_payload(
+        self,
+        df: pd.DataFrame,
+        attributes: str | list = 'all',
+        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
+    ) -> pd.DataFrame:
         """
         Add latest payload attributes to encoded DataFrame. 
         """
@@ -136,12 +143,27 @@ class BaseEncoder(ABC):
         if attributes == 'all':
             attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
 
+        # Add latest payload of specified attributes to the dataframe
         for payload_attribute in attributes:
             attribute_values = []
             
             for _, row in df.iterrows():
                 attribute_values.append(self.original_df.loc[row[self.ORIGINAL_INDEX_KEY], payload_attribute])
 
-            df[f'{payload_attribute}_latest'] = attribute_values
+            df[f'{payload_attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}'] = attribute_values
 
-        return df, attributes
+        # Transform to one-hot if requested
+        if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
+            categorical_columns = []
+            
+            for attribute in attributes:
+                if is_object_dtype(df[f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}']):
+                    categorical_columns.append(f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
+
+            df = pd.get_dummies(
+                df,
+                columns=categorical_columns,
+                drop_first=True,
+            )
+
+        return df

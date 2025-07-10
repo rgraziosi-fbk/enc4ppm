@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas.api.types import is_object_dtype
 
 from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding
@@ -86,13 +85,10 @@ class FrequencyEncoder(BaseEncoder):
         encoded_df = pd.DataFrame(rows)
         
         if include_latest_payload:
-            encoded_df, attributes = super()._include_latest_payload(encoded_df, attributes=attributes)
-
-            if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
-                encoded_df = pd.get_dummies(
-                    encoded_df,
-                    columns=[f'{attribute}_latest' for attribute in attributes if is_object_dtype(encoded_df[f'{attribute}_latest'])],
-                    drop_first=True,
-                )
+            encoded_df = super()._include_latest_payload(
+                encoded_df,
+                attributes=attributes,
+                categorical_attributes_encoding=categorical_attributes_encoding
+            )
 
         return encoded_df

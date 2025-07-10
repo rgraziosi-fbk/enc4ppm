@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 
 from src.enc4ppm.frequency_encoder import FrequencyEncoder
-from src.enc4ppm.constants import LabelingType
+from src.enc4ppm.constants import LabelingType, CategoricalEncoding
 from tests.data.test_log_info import *
 
 @pytest.fixture
@@ -240,6 +240,7 @@ def test_frequency_encoder(log, gt_encoded_log):
     for row in gt_encoded_log:
         assert row in encoded_log.to_dict(orient='records')
 
+
 def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
     frequency_encoder = FrequencyEncoder(
         labeling_type=LabelingType.NEXT_ACTIVITY,
@@ -247,11 +248,11 @@ def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
     )
-
     encoded_log = frequency_encoder.encode(
         log,
         include_latest_payload=True,
         attributes='all',
+        categorical_attributes_encoding=CategoricalEncoding.STRING,
     )
 
     assert len(gt_encoded_log_latest_payload) == len(encoded_log)

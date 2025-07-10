@@ -32,6 +32,9 @@ class SimpleIndexEncoder(BaseEncoder):
         df: pd.DataFrame,
         *,
         activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
+        include_latest_payload: bool = False,
+        attributes: str | list = 'all',
+        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         """
         Encode the provided DataFrame with simple-index encoding and apply the specified labeling.
@@ -39,17 +42,29 @@ class SimpleIndexEncoder(BaseEncoder):
         Args:
             df: DataFrame to encode.
             activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
+            include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
+            attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
+            categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
 
         Returns:
             The encoded DataFrame.
         """
-        return super()._encode_template(df, activity_encoding=activity_encoding)
+        return super()._encode_template(
+            df,
+            activity_encoding=activity_encoding,
+            include_latest_payload=include_latest_payload,
+            attributes=attributes,
+            categorical_attributes_encoding=categorical_attributes_encoding,
+        )
 
 
     def _encode(
         self,
         df: pd.DataFrame,
         activity_encoding: CategoricalEncoding,
+        include_latest_payload: bool = False,
+        attributes: str | list = 'all',
+        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         grouped = df.groupby(self.case_id_key)
         max_prefix_length = grouped.size().max()
@@ -80,6 +95,13 @@ class SimpleIndexEncoder(BaseEncoder):
                 encoded_df,
                 columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)],
                 drop_first=True,
+            )
+
+        if include_latest_payload:
+            encoded_df = super()._include_latest_payload(
+                encoded_df,
+                attributes=attributes,
+                categorical_attributes_encoding=categorical_attributes_encoding
             )
 
         return encoded_df
