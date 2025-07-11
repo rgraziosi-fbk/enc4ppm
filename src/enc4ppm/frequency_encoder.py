@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .base_encoder import BaseEncoder
-from .constants import LabelingType, CategoricalEncoding
+from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class FrequencyEncoder(BaseEncoder):
 
@@ -9,6 +9,8 @@ class FrequencyEncoder(BaseEncoder):
         self,
         *,
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        prefix_length: int = None,
+        prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
         case_id_key: str = 'case:concept:name',
         activity_key: str = 'concept:name',
         timestamp_key: str = 'time:timestamp',
@@ -18,11 +20,20 @@ class FrequencyEncoder(BaseEncoder):
 
         Args:
             labeling_type: Label type to apply to examples.
+            prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.
+            prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).
             case_id_key: Column name for case identifiers.
             activity_key: Column name for activity names.
             timestamp_key: Column name for timestamps.
         """
-        super().__init__(labeling_type, case_id_key, activity_key, timestamp_key)
+        super().__init__(
+            labeling_type,
+            prefix_length,
+            prefix_strategy,
+            case_id_key,
+            activity_key,
+            timestamp_key,
+        )
 
     
     def encode(
@@ -75,6 +86,7 @@ class FrequencyEncoder(BaseEncoder):
                 row = {
                     self.case_id_key: case_id,
                     self.ORIGINAL_INDEX_KEY: prefix.index[-1],
+                    self.EVENT_NUM_IN_CASE_KEY: prefix_length,
                 }
 
                 for activity in activities:

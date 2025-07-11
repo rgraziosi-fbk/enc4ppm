@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 
 from src.enc4ppm.simple_index_encoder import SimpleIndexEncoder
-from src.enc4ppm.constants import LabelingType, CategoricalEncoding
+from src.enc4ppm.constants import LabelingType, CategoricalEncoding, PrefixStrategy
 from tests.data.test_log_info import *
 
 @pytest.fixture
@@ -207,6 +207,77 @@ def gt_encoded_log_latest_payload():
         },
     ]
 
+@pytest.fixture
+def gt_encoded_log_prefix_length_up_to_2():
+    return [
+        # Case001
+        {
+            CASE_ID_KEY: 'Case001',
+            'event_1': 'Receive Order',
+            'event_2': 'PADDING',
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case001',
+            'event_1': 'Receive Order',
+            'event_2': 'Ship',
+            'label': 'Receive Payment',
+        },
+        # Case002
+        {
+            CASE_ID_KEY: 'Case002',
+            'event_1': 'Receive Order',
+            'event_2': 'PADDING',
+            'label': 'Contact Supplier',
+        },
+        {
+            CASE_ID_KEY: 'Case002',
+            'event_1': 'Receive Order',
+            'event_2': 'Contact Supplier',
+            'label': 'Ship',
+        },
+        # Case003
+        {
+            CASE_ID_KEY: 'Case003',
+            'event_1': 'Receive Order',
+            'event_2': 'PADDING',
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'event_1': 'Receive Order',
+            'event_2': 'Ship',
+            'label': 'Receive Payment',
+        },
+    ]
+
+@pytest.fixture
+def gt_encoded_log_prefix_length_only_2():
+    return [
+        # Case001
+        {
+            CASE_ID_KEY: 'Case001',
+            'event_1': 'Receive Order',
+            'event_2': 'Ship',
+            'label': 'Receive Payment',
+        },
+        # Case002
+        {
+            CASE_ID_KEY: 'Case002',
+            'event_1': 'Receive Order',
+            'event_2': 'Contact Supplier',
+            'label': 'Ship',
+        },
+        # Case003
+        {
+            CASE_ID_KEY: 'Case003',
+            'event_1': 'Receive Order',
+            'event_2': 'Ship',
+            'label': 'Receive Payment',
+        },
+    ]
+
+
 def test_simple_index_encoder(log, gt_encoded_log):
     simple_index_encoder = SimpleIndexEncoder(
         labeling_type=LabelingType.NEXT_ACTIVITY,
@@ -244,3 +315,41 @@ def test_simple_index_encoder_latest_payload(log, gt_encoded_log_latest_payload)
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_latest_payload)):
         assert gt_encoded_log_latest_payload[i] == encoded_log[i]
+
+
+def test_simple_index_encoder_prefix_length_up_to_2(log, gt_encoded_log_prefix_length_up_to_2):
+    simple_index_encoder = SimpleIndexEncoder(
+        labeling_type=LabelingType.NEXT_ACTIVITY,
+        prefix_length=2,
+        prefix_strategy=PrefixStrategy.UP_TO_SPECIFIED,
+        case_id_key=CASE_ID_KEY,
+        activity_key=ACTIVITY_KEY,
+        timestamp_key=TIMESTAMP_KEY,
+    )
+    encoded_log = simple_index_encoder.encode(log)
+
+    assert len(gt_encoded_log_prefix_length_up_to_2) == len(encoded_log)
+    assert len(encoded_log.columns) == 2 + 1 + 1 # 2 is specified prefix length, + 1 is case id, + 1 is label
+
+    encoded_log = encoded_log.to_dict(orient='records')
+    for i in range(len(gt_encoded_log_prefix_length_up_to_2)):
+        assert gt_encoded_log_prefix_length_up_to_2[i] == encoded_log[i]
+
+
+def test_simple_index_encoder_prefix_length_only_2(log, gt_encoded_log_prefix_length_only_2):
+    simple_index_encoder = SimpleIndexEncoder(
+        labeling_type=LabelingType.NEXT_ACTIVITY,
+        prefix_length=2,
+        prefix_strategy=PrefixStrategy.ONLY_SPECIFIED,
+        case_id_key=CASE_ID_KEY,
+        activity_key=ACTIVITY_KEY,
+        timestamp_key=TIMESTAMP_KEY,
+    )
+    encoded_log = simple_index_encoder.encode(log)
+
+    assert len(gt_encoded_log_prefix_length_only_2) == len(encoded_log)
+    assert len(encoded_log.columns) == 2 + 1 + 1 # 2 is specified prefix length, + 1 is case id, + 1 is label
+
+    encoded_log = encoded_log.to_dict(orient='records')
+    for i in range(len(gt_encoded_log_prefix_length_only_2)):
+        assert gt_encoded_log_prefix_length_only_2[i] == encoded_log[i]
