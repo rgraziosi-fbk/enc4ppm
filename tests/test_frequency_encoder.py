@@ -237,8 +237,9 @@ def test_frequency_encoder(log, gt_encoded_log):
     assert len(gt_encoded_log) == len(encoded_log)
     assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 # + 1 is case id, + 1 is label
 
-    for row in gt_encoded_log:
-        assert row in encoded_log.to_dict(orient='records')
+    encoded_log = encoded_log.to_dict(orient='records')
+    for i in range(len(gt_encoded_log)):
+        assert gt_encoded_log[i] == encoded_log[i]
 
 
 def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
@@ -258,5 +259,6 @@ def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
     assert len(gt_encoded_log_latest_payload) == len(encoded_log)
     assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 + 2 # + 1 is case id, + 1 is label, + 2 are attributes
 
-    for row in gt_encoded_log_latest_payload:
-        assert row in encoded_log.to_dict(orient='records')
+    encoded_log = encoded_log.to_dict(orient='records')
+    for i in range(len(gt_encoded_log_latest_payload)):
+        assert gt_encoded_log_latest_payload[i] == encoded_log[i]
