@@ -39,7 +39,6 @@ class FrequencyEncoder(BaseEncoder):
     def encode(
         self,
         df: pd.DataFrame,
-        *,
         include_latest_payload: bool = False,
         attributes: str | list = 'all',
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,

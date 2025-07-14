@@ -31,6 +31,8 @@ class BaseEncoder(ABC):
     def _encode(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
         The _encode abstract method must be defined by subclasses and must contain the specific encoding logic of the encoder.
+        In particular, the _encode implementation must create the necessary columns for the specific encoding + add the ORIGINAL_INDEX_KEY and EVENT_NUM_IN_CASE_KEY columns.
+        The _encode method must not filter rows (events), but instead return them all: the BaseEncoder will then _apply_prefix_strategy to filter them.
         """
         pass
 
@@ -38,7 +40,7 @@ class BaseEncoder(ABC):
     def _encode_template(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
         The _encode_template method is a template method which performs both common operations shared amongs all encoders and the specific logic of each encoder.
-        In particular, common operations are: _preprocess_log, _label_log and _postprocess_log; specific encoding is performed by subclass _encode method.
+        In particular, common operations are: _preprocess_log, _label_log, _apply_prefix_strategy and _postprocess_log; specific encoding is performed by the _encode method.
         """
         df = self._preprocess_log(df)
 
@@ -103,6 +105,9 @@ class BaseEncoder(ABC):
         """
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _label_log')
+        
+        if self.EVENT_NUM_IN_CASE_KEY not in df.columns:
+            raise ValueError(f'You must include {self.EVENT_NUM_IN_CASE_KEY} column into df before calling _label_log')
         
         if self.labeling_type == LabelingType.NEXT_ACTIVITY:
             labels = []
