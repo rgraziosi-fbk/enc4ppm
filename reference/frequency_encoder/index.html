@@ -676,7 +676,9 @@
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
-<span class="normal">106</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FrequencyEncoder</span><span class="p">(</span><span class="n">BaseEncoder</span><span class="p">):</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FrequencyEncoder</span><span class="p">(</span><span class="n">BaseEncoder</span><span class="p">):</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -684,6 +686,7 @@
         <span class="n">labeling_type</span><span class="p">:</span> <span class="n">LabelingType</span> <span class="o">=</span> <span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span>
         <span class="n">prefix_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">prefix_strategy</span><span class="p">:</span> <span class="n">PrefixStrategy</span> <span class="o">=</span> <span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span>
+        <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">case_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span>
         <span class="n">activity_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;concept:name&#39;</span><span class="p">,</span>
         <span class="n">timestamp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;time:timestamp&#39;</span><span class="p">,</span>
@@ -695,6 +698,7 @@
 <span class="sd">            labeling_type: Label type to apply to examples.</span>
 <span class="sd">            prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.</span>
 <span class="sd">            prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).</span>
+<span class="sd">            timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.</span>
 <span class="sd">            case_id_key: Column name for case identifiers.</span>
 <span class="sd">            activity_key: Column name for activity names.</span>
 <span class="sd">            timestamp_key: Column name for timestamps.</span>
@@ -703,6 +707,7 @@
             <span class="n">labeling_type</span><span class="p">,</span>
             <span class="n">prefix_length</span><span class="p">,</span>
             <span class="n">prefix_strategy</span><span class="p">,</span>
+            <span class="n">timestamp_format</span><span class="p">,</span>
             <span class="n">case_id_key</span><span class="p">,</span>
             <span class="n">activity_key</span><span class="p">,</span>
             <span class="n">timestamp_key</span><span class="p">,</span>
@@ -712,7 +717,6 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-        <span class="o">*</span><span class="p">,</span>
         <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
         <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
@@ -758,8 +762,8 @@
 
                 <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">case_id_key</span><span class="p">:</span> <span class="n">case_id</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">timestamp_key</span><span class="p">:</span> <span class="n">prefix</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_key</span><span class="p">],</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">ORIGINAL_INDEX_KEY</span><span class="p">:</span> <span class="n">prefix</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">EVENT_NUM_IN_CASE_KEY</span><span class="p">:</span> <span class="n">prefix_length</span><span class="p">,</span>
                 <span class="p">}</span>
 
                 <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">activities</span><span class="p">:</span>
@@ -796,7 +800,7 @@
 
 
 <h3 id="enc4ppm.frequency_encoder.FrequencyEncoder.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">labeling_type</span><span class="o">=</span><span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span> <span class="n">prefix_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix_strategy</span><span class="o">=</span><span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span> <span class="n">case_id_key</span><span class="o">=</span><span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span> <span class="n">activity_key</span><span class="o">=</span><span class="s1">&#39;concept:name&#39;</span><span class="p">,</span> <span class="n">timestamp_key</span><span class="o">=</span><span class="s1">&#39;time:timestamp&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">labeling_type</span><span class="o">=</span><span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span> <span class="n">prefix_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix_strategy</span><span class="o">=</span><span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span> <span class="n">timestamp_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">case_id_key</span><span class="o">=</span><span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span> <span class="n">activity_key</span><span class="o">=</span><span class="s1">&#39;concept:name&#39;</span><span class="p">,</span> <span class="n">timestamp_key</span><span class="o">=</span><span class="s1">&#39;time:timestamp&#39;</span><span class="p">)</span></code>
 
 </h3>
 
@@ -863,6 +867,22 @@
             </td>
             <td>
                   <code><span title="enc4ppm.constants.PrefixStrategy.UP_TO_SPECIFIED">UP_TO_SPECIFIED</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>timestamp_format</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Format of the timestamps in the log. If not provided, formatting will be inferred from the data.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -947,12 +967,16 @@
 <span class="normal">33</span>
 <span class="normal">34</span>
 <span class="normal">35</span>
-<span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">labeling_type</span><span class="p">:</span> <span class="n">LabelingType</span> <span class="o">=</span> <span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span>
     <span class="n">prefix_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">prefix_strategy</span><span class="p">:</span> <span class="n">PrefixStrategy</span> <span class="o">=</span> <span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span>
+    <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">case_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span>
     <span class="n">activity_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;concept:name&#39;</span><span class="p">,</span>
     <span class="n">timestamp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;time:timestamp&#39;</span><span class="p">,</span>
@@ -964,6 +988,7 @@
 <span class="sd">        labeling_type: Label type to apply to examples.</span>
 <span class="sd">        prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.</span>
 <span class="sd">        prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).</span>
+<span class="sd">        timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.</span>
 <span class="sd">        case_id_key: Column name for case identifiers.</span>
 <span class="sd">        activity_key: Column name for activity names.</span>
 <span class="sd">        timestamp_key: Column name for timestamps.</span>
@@ -972,6 +997,7 @@
         <span class="n">labeling_type</span><span class="p">,</span>
         <span class="n">prefix_length</span><span class="p">,</span>
         <span class="n">prefix_strategy</span><span class="p">,</span>
+        <span class="n">timestamp_format</span><span class="p">,</span>
         <span class="n">case_id_key</span><span class="p">,</span>
         <span class="n">activity_key</span><span class="p">,</span>
         <span class="n">timestamp_key</span><span class="p">,</span>
@@ -986,7 +1012,7 @@
 
 
 <h3 id="enc4ppm.frequency_encoder.FrequencyEncoder.encode" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">encode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">include_latest_payload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">encode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">include_latest_payload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">)</span></code>
 
 </h3>
 
@@ -1100,10 +1126,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/enc4ppm/frequency_encoder.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
@@ -1125,10 +1148,11 @@
 <span class="normal">61</span>
 <span class="normal">62</span>
 <span class="normal">63</span>
-<span class="normal">64</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
     <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
     <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
