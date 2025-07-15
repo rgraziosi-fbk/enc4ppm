@@ -88,8 +88,8 @@ class SimpleIndexEncoder(BaseEncoder):
             for prefix_length in range(1, len(case_events)+1):
                 row = {
                     self.case_id_key: case_id,
+                    self.timestamp_key: case_events.loc[prefix_length-1, self.timestamp_key],
                     self.ORIGINAL_INDEX_KEY: case_events.loc[prefix_length-1, 'index'],
-                    self.EVENT_NUM_IN_CASE_KEY: prefix_length,
                 }
 
                 for i in range(1, min(self.prefix_length, max_prefix_length)+1):

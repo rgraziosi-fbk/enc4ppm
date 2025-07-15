@@ -84,8 +84,8 @@ class FrequencyEncoder(BaseEncoder):
 
                 row = {
                     self.case_id_key: case_id,
+                    self.timestamp_key: prefix.iloc[-1][self.timestamp_key],
                     self.ORIGINAL_INDEX_KEY: prefix.index[-1],
-                    self.EVENT_NUM_IN_CASE_KEY: prefix_length,
                 }
 
                 for activity in activities:

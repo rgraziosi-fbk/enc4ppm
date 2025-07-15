@@ -6,7 +6,6 @@ from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
-    EVENT_NUM_IN_CASE_KEY = 'EventNumInCase'
     LABEL_KEY = 'label'
     LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
     
@@ -31,7 +30,7 @@ class BaseEncoder(ABC):
     def _encode(self, df: pd.DataFrame, **kwargs) -> pd.DataFrame:
         """
         The _encode abstract method must be defined by subclasses and must contain the specific encoding logic of the encoder.
-        In particular, the _encode implementation must create the necessary columns for the specific encoding + add the ORIGINAL_INDEX_KEY and EVENT_NUM_IN_CASE_KEY columns.
+        In particular, the _encode implementation must create the necessary columns for the specific encoding + add the ORIGINAL_INDEX_KEY column.
         The _encode method must not filter rows (events), but instead return them all: the BaseEncoder will then _apply_prefix_strategy to filter them.
         """
         pass
@@ -106,25 +105,16 @@ class BaseEncoder(ABC):
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _label_log')
         
-        if self.EVENT_NUM_IN_CASE_KEY not in df.columns:
-            raise ValueError(f'You must include {self.EVENT_NUM_IN_CASE_KEY} column into df before calling _label_log')
-        
         if self.labeling_type == LabelingType.NEXT_ACTIVITY:
-            labels = []
+            # Get the next ORIGINAL_INDEX_KEY per case
+            df = df.sort_values([self.case_id_key, self.timestamp_key], ascending=[True, True]).reset_index(drop=True)
+            df['next_index'] = df.groupby(self.case_id_key)[self.ORIGINAL_INDEX_KEY].shift(-1)
+
+            # Map next_index to activity in original_df
+            df[self.LABEL_KEY] = df['next_index'].map(self.original_df[self.activity_key])
             
-            for _, row in df.iterrows():
-                same_case = df[
-                    (df[self.case_id_key] == row[self.case_id_key]) &
-                    (df[self.ORIGINAL_INDEX_KEY] > row[self.ORIGINAL_INDEX_KEY])
-                ]
-                if not same_case.empty:
-                    next_index = same_case[self.ORIGINAL_INDEX_KEY].min()
-                    label = self.original_df.loc[next_index, self.activity_key]
-                else:
-                    label = None
-                labels.append(label)
-            
-            df[self.LABEL_KEY] = labels
+            # Drop the helper column
+            df = df.drop(columns=['next_index'])
 
         return df
     
@@ -133,10 +123,19 @@ class BaseEncoder(ABC):
         """
         Common logic shared by all encoders. The method filters the log with respect to specified prefix_length value.
         """
+        # Compute event number in case (starting from 1)
+        df = df.sort_values([self.case_id_key, self.timestamp_key], ascending=[True, True]).reset_index(drop=True)
+        df['event_num_in_case'] = df.groupby(self.case_id_key).cumcount() + 1
+
         if self.prefix_strategy == PrefixStrategy.UP_TO_SPECIFIED:
-            filtered_df = df[df[self.EVENT_NUM_IN_CASE_KEY] <= self.prefix_length]
+            filtered_df = df[df['event_num_in_case'] <= self.prefix_length]
         elif self.prefix_strategy == PrefixStrategy.ONLY_SPECIFIED:
-            filtered_df = df[df[self.EVENT_NUM_IN_CASE_KEY] == self.prefix_length]
+            filtered_df = df[df['event_num_in_case'] == self.prefix_length]
+        else:
+            filtered_df = df
+
+        # Drop the helper column
+        filtered_df = filtered_df.drop(columns=['event_num_in_case'])
 
         return filtered_df
 
@@ -145,14 +144,11 @@ class BaseEncoder(ABC):
         """
         Common postprocessing logic shared by all encoders. The method restores original ordering and drops unnecessary data.
         """
-        if self.ORIGINAL_INDEX_KEY not in df.columns:
-            raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _postprocess_log')
-        
         # Restore original ordering
         df = df.sort_values(by=self.ORIGINAL_INDEX_KEY).reset_index(drop=True)
 
         # Drop unnecessary data
-        df = df.drop(columns=[self.ORIGINAL_INDEX_KEY, self.EVENT_NUM_IN_CASE_KEY])
+        df = df.drop(columns=[self.timestamp_key, self.ORIGINAL_INDEX_KEY])
         df = df.dropna(subset=[self.LABEL_KEY]).reset_index(drop=True)
 
         return df
