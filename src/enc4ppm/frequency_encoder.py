@@ -11,6 +11,7 @@ class FrequencyEncoder(BaseEncoder):
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
         prefix_length: int = None,
         prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
+        timestamp_format: str = None,
         case_id_key: str = 'case:concept:name',
         activity_key: str = 'concept:name',
         timestamp_key: str = 'time:timestamp',
@@ -22,6 +23,7 @@ class FrequencyEncoder(BaseEncoder):
             labeling_type: Label type to apply to examples.
             prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.
             prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).
+            timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.
             case_id_key: Column name for case identifiers.
             activity_key: Column name for activity names.
             timestamp_key: Column name for timestamps.
@@ -30,6 +32,7 @@ class FrequencyEncoder(BaseEncoder):
             labeling_type,
             prefix_length,
             prefix_strategy,
+            timestamp_format,
             case_id_key,
             activity_key,
             timestamp_key,

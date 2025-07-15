@@ -335,6 +335,7 @@ def gt_encoded_log_prefix_length_only_2():
 def test_frequency_encoder(log, gt_encoded_log):
     frequency_encoder = FrequencyEncoder(
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
@@ -352,6 +353,7 @@ def test_frequency_encoder(log, gt_encoded_log):
 def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
     frequency_encoder = FrequencyEncoder(
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
@@ -376,6 +378,7 @@ def test_frequency_encoder_prefix_length_up_to_2(log, gt_encoded_log_prefix_leng
         labeling_type=LabelingType.NEXT_ACTIVITY,
         prefix_length=2,
         prefix_strategy=PrefixStrategy.UP_TO_SPECIFIED,
+        timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
@@ -395,6 +398,7 @@ def test_frequency_encoder_prefix_length_only_2(log, gt_encoded_log_prefix_lengt
         labeling_type=LabelingType.NEXT_ACTIVITY,
         prefix_length=2,
         prefix_strategy=PrefixStrategy.ONLY_SPECIFIED,
+        timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,

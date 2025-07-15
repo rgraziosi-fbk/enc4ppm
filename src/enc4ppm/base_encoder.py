@@ -14,6 +14,7 @@ class BaseEncoder(ABC):
             labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
             prefix_length: int = None,
             prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
+            timestamp_format: str = None,
             case_id_key: str = 'case:concept:name',
             activity_key: str = 'concept:name',
             timestamp_key: str = 'time:timestamp',
@@ -21,6 +22,7 @@ class BaseEncoder(ABC):
         self.labeling_type = labeling_type
         self.prefix_length = prefix_length
         self.prefix_strategy = prefix_strategy
+        self.timestamp_format = timestamp_format
         self.case_id_key = case_id_key
         self.activity_key = activity_key
         self.timestamp_key = timestamp_key
@@ -90,7 +92,7 @@ class BaseEncoder(ABC):
             self.prefix_length = min(self.prefix_length, max_prefix_length_log)
 
         # Cast timestamp column to datetime
-        df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key])
+        df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
 
         # Save original df for later use
         self.original_df = df
@@ -105,9 +107,11 @@ class BaseEncoder(ABC):
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _label_log')
         
+        # Sort by case and timestamp
+        df = df.sort_values([self.case_id_key, self.timestamp_key], ascending=[True, True]).reset_index(drop=True)
+
         if self.labeling_type == LabelingType.NEXT_ACTIVITY:
             # Get the next ORIGINAL_INDEX_KEY per case
-            df = df.sort_values([self.case_id_key, self.timestamp_key], ascending=[True, True]).reset_index(drop=True)
             df['next_index'] = df.groupby(self.case_id_key)[self.ORIGINAL_INDEX_KEY].shift(-1)
 
             # Map next_index to activity in original_df
@@ -115,6 +119,13 @@ class BaseEncoder(ABC):
             
             # Drop the helper column
             df = df.drop(columns=['next_index'])
+
+        elif self.labeling_type == LabelingType.REMAINING_TIME:
+            # Get the last timestamp for each case
+            last_timestamp_per_case = df.groupby(self.case_id_key)[self.timestamp_key].transform('max')
+
+            # Compute remaining time in hours
+            df[self.LABEL_KEY] = (last_timestamp_per_case - df[self.timestamp_key]).dt.total_seconds() / 60 / 60
 
         return df
     
