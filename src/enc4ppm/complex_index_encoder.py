@@ -47,7 +47,8 @@ class ComplexIndexEncoder(BaseEncoder):
         df: pd.DataFrame,
         *,
         activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
-        attributes: str | list = 'all',
+        static_attributes: list[str] = [],
+        dynamic_attributes: list[str] = [],
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         """
@@ -56,7 +57,8 @@ class ComplexIndexEncoder(BaseEncoder):
         Args:
             df: DataFrame to encode.
             activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
-            attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
+            static_attributes: Which static trace attributes to consider.
+            dynamic_attributes: Which dynamic event attributes to consider.
             categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
 
         Returns:
@@ -65,7 +67,8 @@ class ComplexIndexEncoder(BaseEncoder):
         return super()._encode_template(
             df,
             activity_encoding=activity_encoding,
-            attributes=attributes,
+            static_attributes=static_attributes,
+            dynamic_attributes=dynamic_attributes,
             categorical_attributes_encoding=categorical_attributes_encoding,
         )
     
@@ -74,17 +77,14 @@ class ComplexIndexEncoder(BaseEncoder):
         self,
         df: pd.DataFrame,
         activity_encoding: CategoricalEncoding,
-        attributes: str | list = 'all',
+        static_attributes: list[str] = None,
+        dynamic_attributes: list[str] = None,
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         grouped = df.groupby(self.case_id_key)
         max_prefix_length = grouped.size().max()
 
         rows = []
-
-        # If attributes set to 'all', obtain all available attributes from dataframe
-        if attributes == 'all':
-            attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
 
         for case_id, case_events in grouped:
             case_events = case_events.sort_values(self.timestamp_key).reset_index()
@@ -96,17 +96,23 @@ class ComplexIndexEncoder(BaseEncoder):
                     self.ORIGINAL_INDEX_KEY: case_events.loc[prefix_length-1, 'index'],
                 }
 
+                # Add static attributes
+                for static_attribute in static_attributes:
+                    row[static_attribute] = case_events.loc[prefix_length-1, static_attribute]
+
                 for i in range(1, min(self.prefix_length, max_prefix_length)+1):
+                    # Add activities
                     if i <= prefix_length:
                         row[f'{self.EVENT_COL_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
                     else:
                         row[f'{self.EVENT_COL_NAME}_{i}'] = self.PADDING_VALUE
 
-                    for attribute in attributes:
+                    # Add dynamic attributes
+                    for dynamic_attribute in dynamic_attributes:
                         if i <= prefix_length:
-                            row[f'{attribute}_{i}'] = case_events.loc[i-1, attribute]
+                            row[f'{dynamic_attribute}_{i}'] = case_events.loc[i-1, dynamic_attribute]
                         else:
-                            row[f'{attribute}_{i}'] = self.PADDING_VALUE
+                            row[f'{dynamic_attribute}_{i}'] = self.PADDING_VALUE
                 
                 rows.append(row)
 
@@ -116,7 +122,7 @@ class ComplexIndexEncoder(BaseEncoder):
         if activity_encoding == CategoricalEncoding.ONE_HOT:
             encoded_df = pd.get_dummies(
                 encoded_df,
-                columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)],
+                columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
                 drop_first=True,
             )
 
@@ -124,9 +130,16 @@ class ComplexIndexEncoder(BaseEncoder):
         if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
             categorical_columns = []
             
-            for attribute in attributes:
-                if is_object_dtype(df[f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}']):
-                    categorical_columns.append(f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
+            for static_attribute in static_attributes:
+                if is_object_dtype(encoded_df[static_attribute]):
+                    categorical_columns.append(static_attribute)
+
+            for dynamic_attribute in dynamic_attributes:
+                for i in range(1, min(self.prefix_length, max_prefix_length)+1):
+                    if is_object_dtype(encoded_df[f'{dynamic_attribute}_{i}']):
+                        categorical_columns.append(f'{dynamic_attribute}_{i}')
+
+            print(categorical_columns)
 
             encoded_df = pd.get_dummies(
                 encoded_df,
