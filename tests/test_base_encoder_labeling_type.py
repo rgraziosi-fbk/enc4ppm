@@ -240,7 +240,7 @@ def gt_encoded_log_remaining_time():
     ]
 
 
-def test_base_encoder_next_activity(log, gt_encoded_log_next_activity):
+def test_next_activity(log, gt_encoded_log_next_activity):
     frequency_encoder = FrequencyEncoder(
         labeling_type=LabelingType.NEXT_ACTIVITY,
         timestamp_format=TIMESTAMP_FORMAT,
@@ -257,7 +257,7 @@ def test_base_encoder_next_activity(log, gt_encoded_log_next_activity):
         assert gt_encoded_log_next_activity[i] == encoded_log[i]
 
 
-def test_base_encoder_remaining_time(log, gt_encoded_log_remaining_time):
+def test_remaining_time(log, gt_encoded_log_remaining_time):
     frequency_encoder = FrequencyEncoder(
         labeling_type=LabelingType.REMAINING_TIME,
         timestamp_format=TIMESTAMP_FORMAT,
