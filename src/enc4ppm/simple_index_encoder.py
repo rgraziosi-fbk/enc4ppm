@@ -108,7 +108,7 @@ class SimpleIndexEncoder(BaseEncoder):
         if activity_encoding == CategoricalEncoding.ONE_HOT:
             encoded_df = pd.get_dummies(
                 encoded_df,
-                columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, max_prefix_length+1)],
+                columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
                 drop_first=True,
             )
 
