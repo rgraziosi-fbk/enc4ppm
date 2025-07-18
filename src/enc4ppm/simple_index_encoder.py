@@ -7,6 +7,11 @@ class SimpleIndexEncoder(BaseEncoder):
     PADDING_VALUE = 'PADDING'
     EVENT_COL_NAME = 'event'
 
+    activity_encoding: CategoricalEncoding = None
+    include_latest_payload: bool = None
+    attributes: str | list = None
+    categorical_attributes_encoding: CategoricalEncoding = None
+
     def __init__(
         self,
         *,
@@ -45,6 +50,7 @@ class SimpleIndexEncoder(BaseEncoder):
         self,
         df: pd.DataFrame,
         *,
+        freeze: bool = False,
         activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
         include_latest_payload: bool = False,
         attributes: str | list = 'all',
@@ -55,6 +61,7 @@ class SimpleIndexEncoder(BaseEncoder):
 
         Args:
             df: DataFrame to encode.
+            freeze: Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.
             activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
             include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
             attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
@@ -65,6 +72,7 @@ class SimpleIndexEncoder(BaseEncoder):
         """
         return super()._encode_template(
             df,
+            freeze=freeze,
             activity_encoding=activity_encoding,
             include_latest_payload=include_latest_payload,
             attributes=attributes,
@@ -75,11 +83,24 @@ class SimpleIndexEncoder(BaseEncoder):
     def _encode(
         self,
         df: pd.DataFrame,
+        freeze: bool,
         activity_encoding: CategoricalEncoding,
         include_latest_payload: bool = False,
         attributes: str | list = 'all',
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
+        if freeze:
+            self.activity_encoding = activity_encoding
+            self.include_latest_payload = include_latest_payload
+            self.attributes = attributes
+            self.categorical_attributes_encoding = categorical_attributes_encoding
+
+        if self.is_frozen:
+            activity_encoding = self.activity_encoding
+            include_latest_payload = self.include_latest_payload
+            attributes = self.attributes
+            categorical_attributes_encoding = self.categorical_attributes_encoding
+
         grouped = df.groupby(self.case_id_key)
         max_prefix_length = grouped.size().max()
 

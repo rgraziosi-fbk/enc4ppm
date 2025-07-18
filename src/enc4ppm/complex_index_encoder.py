@@ -8,6 +8,11 @@ class ComplexIndexEncoder(BaseEncoder):
     PADDING_VALUE = 'PADDING'
     EVENT_COL_NAME = 'event'
 
+    activity_encoding: CategoricalEncoding = None
+    static_attributes: list[str] = None
+    dynamic_attributes: list[str] = None
+    categorical_attributes_encoding: CategoricalEncoding = None
+
     def __init__(
         self,
         *,
@@ -46,6 +51,7 @@ class ComplexIndexEncoder(BaseEncoder):
         self,
         df: pd.DataFrame,
         *,
+        freeze: bool = False,
         activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
         static_attributes: list[str] = [],
         dynamic_attributes: list[str] = [],
@@ -56,6 +62,7 @@ class ComplexIndexEncoder(BaseEncoder):
 
         Args:
             df: DataFrame to encode.
+            freeze: Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.
             activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
             static_attributes: Which static trace attributes to consider.
             dynamic_attributes: Which dynamic event attributes to consider.
@@ -66,6 +73,7 @@ class ComplexIndexEncoder(BaseEncoder):
         """
         return super()._encode_template(
             df,
+            freeze=freeze,
             activity_encoding=activity_encoding,
             static_attributes=static_attributes,
             dynamic_attributes=dynamic_attributes,
@@ -76,11 +84,24 @@ class ComplexIndexEncoder(BaseEncoder):
     def _encode(
         self,
         df: pd.DataFrame,
+        freeze: bool,
         activity_encoding: CategoricalEncoding,
         static_attributes: list[str] = None,
         dynamic_attributes: list[str] = None,
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
+        if freeze:
+            self.activity_encoding = activity_encoding
+            self.static_attributes = static_attributes
+            self.dynamic_attributes = dynamic_attributes
+            self.categorical_attributes_encoding = categorical_attributes_encoding
+
+        if self.is_frozen:
+            activity_encoding = self.activity_encoding
+            static_attributes = self.static_attributes
+            dynamic_attributes = self.dynamic_attributes
+            categorical_attributes_encoding = self.categorical_attributes_encoding
+
         grouped = df.groupby(self.case_id_key)
         max_prefix_length = grouped.size().max()
 

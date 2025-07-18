@@ -1,3 +1,5 @@
+import os
+import pickle
 from abc import ABC, abstractmethod
 import pandas as pd
 from pandas.api.types import is_object_dtype
@@ -8,6 +10,9 @@ class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
     LABEL_KEY = 'label'
     LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
+
+    is_frozen: bool = False
+    train_df: pd.DataFrame = None
     
     def __init__(
             self,
@@ -43,6 +48,10 @@ class BaseEncoder(ABC):
         The _encode_template method is a template method which performs both common operations shared amongs all encoders and the specific logic of each encoder.
         In particular, common operations are: _preprocess_log, _label_log, _apply_prefix_strategy and _postprocess_log; specific encoding is performed by the _encode method.
         """
+        if 'freeze' in kwargs and kwargs['freeze']:
+            self.is_frozen = True
+            self.train_df = df
+
         df = self._preprocess_log(df)
 
         encoded_df = self._encode(df, **kwargs)
@@ -80,16 +89,17 @@ class BaseEncoder(ABC):
         if not isinstance(self.prefix_strategy, PrefixStrategy):
             raise TypeError(f'prefix_strategy must be a valid PrefixStrategy: {[e.name for e in PrefixStrategy]}')
             
-        # Get prefix length to consider based both on provided one and maximum found in log
-        max_prefix_length_log = df.groupby(self.case_id_key).size().max()
-        
-        if self.prefix_length is None:
-            self.prefix_length = max_prefix_length_log
-        else:
-            if self.prefix_length > max_prefix_length_log:
-                print(f'Warning: provided prefix_length {self.prefix_length} is higher than maximum prefix length found in log {max_prefix_length_log}! Setting prefix_length to {max_prefix_length_log}.')
+        if not self.is_frozen:
+            # Get prefix length to consider based both on provided one and maximum found in log
+            max_prefix_length_log = df.groupby(self.case_id_key).size().max().item()
+            
+            if self.prefix_length is None:
+                self.prefix_length = max_prefix_length_log
+            else:
+                if self.prefix_length > max_prefix_length_log:
+                    print(f'Warning: provided prefix_length {self.prefix_length} is higher than maximum prefix length found in log {max_prefix_length_log}! Setting prefix_length to {max_prefix_length_log}.')
 
-            self.prefix_length = min(self.prefix_length, max_prefix_length_log)
+                self.prefix_length = min(self.prefix_length, max_prefix_length_log)
 
         # Cast timestamp column to datetime
         df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
@@ -217,3 +227,43 @@ class BaseEncoder(ABC):
             )
 
         return df
+
+    
+    def save(self, filepath: str) -> None:
+        """
+        Save the encoder instance to a pickle file.
+
+        Only works if the encoder is frozen (is_frozen == True).
+        Raises RuntimeError if called when is_frozen is False.
+
+        Args:
+            filepath (str): Path to the pickle file where the encoder will be saved.
+        """
+        if not self.is_frozen:
+            raise RuntimeError("Encoder must be frozen before saving. Call with freeze=True during encoding.")
+        
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+
+    
+    @classmethod
+    def load(cls, filepath: str):
+        """
+        Load a frozen encoder instance from a pickle file.
+
+        Args:
+            filepath (str): Path to the pickle file to load.
+
+        Returns:
+            BaseEncoder: The loaded encoder instance.
+        """
+        if not os.path.exists(filepath):
+            raise FileNotFoundError(f"File '{filepath}' does not exist.")
+        
+        with open(filepath, 'rb') as f:
+            encoder = pickle.load(f)
+        
+        if not isinstance(encoder, cls):
+            raise TypeError(f"Loaded object is not an instance of {cls.__name__}")
+        
+        return encoder

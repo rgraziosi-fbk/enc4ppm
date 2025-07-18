@@ -4,6 +4,9 @@ from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class FrequencyEncoder(BaseEncoder):
+    include_latest_payload: bool = None
+    attributes: str | list[str] = None
+    categorical_attributes_encoding: CategoricalEncoding = None
 
     def __init__(
         self,
@@ -42,8 +45,10 @@ class FrequencyEncoder(BaseEncoder):
     def encode(
         self,
         df: pd.DataFrame,
+        *,
+        freeze: bool = False,
         include_latest_payload: bool = False,
-        attributes: str | list = 'all',
+        attributes: str | list[str] = 'all',
         categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         """
@@ -51,6 +56,7 @@ class FrequencyEncoder(BaseEncoder):
 
         Args:
             df: DataFrame to encode.
+            freeze: Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.
             include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
             attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
             categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
@@ -60,6 +66,7 @@ class FrequencyEncoder(BaseEncoder):
         """
         return super()._encode_template(
             df,
+            freeze=freeze,
             include_latest_payload=include_latest_payload,
             attributes=attributes,
             categorical_attributes_encoding=categorical_attributes_encoding,
@@ -69,10 +76,21 @@ class FrequencyEncoder(BaseEncoder):
     def _encode(
         self,
         df: pd.DataFrame,
+        freeze: bool,
         include_latest_payload: bool,
         attributes: str | list,
         categorical_attributes_encoding: CategoricalEncoding,
     ) -> pd.DataFrame:
+        if freeze:
+            self.include_latest_payload = include_latest_payload
+            self.attributes = attributes
+            self.categorical_attributes_encoding = categorical_attributes_encoding
+
+        if self.is_frozen:
+            include_latest_payload = self.include_latest_payload
+            attributes = self.attributes
+            categorical_attributes_encoding = self.categorical_attributes_encoding
+
         grouped = df.groupby(self.case_id_key)
         activities = df[self.activity_key].unique().tolist()
 
