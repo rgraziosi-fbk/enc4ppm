@@ -5,7 +5,8 @@ from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class ComplexIndexEncoder(BaseEncoder):
-    PADDING_VALUE = 'PADDING'
+    PADDING_CAT_VALUE = 'PADDING'
+    PADDING_NUM_VALUE = 0.0
     EVENT_COL_NAME = 'event'
 
     activity_encoding: CategoricalEncoding = None
@@ -110,6 +111,11 @@ class ComplexIndexEncoder(BaseEncoder):
 
         rows = []
 
+        # Build a dictionary mapping dynamic_attributes to either 'cat' or 'num', based on whether the attributes are categorical or numerical
+        dynamic_attributes_types = {
+            attr: 'cat' if is_object_dtype(df[attr]) else 'num' for attr in dynamic_attributes
+        }
+
         for case_id, case_events in grouped:
             case_events = case_events.sort_values(self.timestamp_key).reset_index()
 
@@ -129,14 +135,14 @@ class ComplexIndexEncoder(BaseEncoder):
                     if i <= prefix_length:
                         row[f'{self.EVENT_COL_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
                     else:
-                        row[f'{self.EVENT_COL_NAME}_{i}'] = self.PADDING_VALUE
+                        row[f'{self.EVENT_COL_NAME}_{i}'] = self.PADDING_CAT_VALUE
 
                     # Add dynamic attributes
                     for dynamic_attribute in dynamic_attributes:
                         if i <= prefix_length:
                             row[f'{dynamic_attribute}_{i}'] = case_events.loc[i-1, dynamic_attribute]
                         else:
-                            row[f'{dynamic_attribute}_{i}'] = self.PADDING_VALUE
+                            row[f'{dynamic_attribute}_{i}'] = dynamic_attributes_types[dynamic_attribute] == 'cat' and self.PADDING_CAT_VALUE or self.PADDING_NUM_VALUE
                 
                 rows.append(row)
 
