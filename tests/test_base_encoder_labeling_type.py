@@ -239,6 +239,134 @@ def gt_encoded_log_remaining_time():
         },
     ]
 
+@pytest.fixture
+def gt_encoded_log_outcome():
+    return [
+        # Case001
+        {
+            CASE_ID_KEY: 'Case001',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case001',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case001',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        # Case002
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 1,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 1,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case002',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 1,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        # Case003
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': True,
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': True,
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': True,
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 1,
+            'Issue Refund': 0,
+            'label': True,
+        },
+        {
+            CASE_ID_KEY: 'Case003',
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 1,
+            'Issue Refund': 1,
+            'label': True,
+        }
+    ]
+
 
 def test_next_activity(log, gt_encoded_log_next_activity):
     frequency_encoder = FrequencyEncoder(
@@ -272,3 +400,23 @@ def test_remaining_time(log, gt_encoded_log_remaining_time):
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_remaining_time)):
         assert gt_encoded_log_remaining_time[i] == encoded_log[i]
+
+
+def test_outcome(log, gt_encoded_log_outcome):
+    frequency_encoder = FrequencyEncoder(
+        labeling_type=LabelingType.OUTCOME,
+        timestamp_format=TIMESTAMP_FORMAT,
+        case_id_key=CASE_ID_KEY,
+        activity_key=ACTIVITY_KEY,
+        timestamp_key=TIMESTAMP_KEY,
+        outcome_key='Outcome',
+    )
+    encoded_log = frequency_encoder.encode(log)
+
+    assert len(gt_encoded_log_outcome) == len(encoded_log)
+
+    print(encoded_log)
+
+    encoded_log = encoded_log.to_dict(orient='records')
+    for i in range(len(gt_encoded_log_outcome)):
+        assert gt_encoded_log_outcome[i] == encoded_log[i]

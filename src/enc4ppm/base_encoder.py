@@ -23,6 +23,7 @@ class BaseEncoder(ABC):
             case_id_key: str = 'case:concept:name',
             activity_key: str = 'concept:name',
             timestamp_key: str = 'time:timestamp',
+            outcome_key: str = 'outcome',
         ) -> None:
         self.labeling_type = labeling_type
         self.prefix_length = prefix_length
@@ -31,6 +32,7 @@ class BaseEncoder(ABC):
         self.case_id_key = case_id_key
         self.activity_key = activity_key
         self.timestamp_key = timestamp_key
+        self.outcome_key = outcome_key
 
 
     @abstractmethod
@@ -79,6 +81,9 @@ class BaseEncoder(ABC):
             
         if not isinstance(self.labeling_type, LabelingType):
             raise TypeError(f'labeling_type must be a valid LabelingType: {[e.name for e in LabelingType]}')
+        
+        if self.labeling_type == LabelingType.OUTCOME and (self.outcome_key is None or self.outcome_key not in df.columns):
+            raise ValueError("If labeling_type is set to OUTCOME, then you must specify the outcome_key parameter and it must be present in the DataFrame")
         
         if self.prefix_length is not None and (not isinstance(self.prefix_length, int) or self.prefix_length <= 0):
             raise ValueError(f'prefix_length must be either None or a positive integer ({self.prefix_length} has been provided instead)')
@@ -136,6 +141,10 @@ class BaseEncoder(ABC):
 
             # Compute remaining time in hours
             df[self.LABEL_KEY] = (last_timestamp_per_case - df[self.timestamp_key]).dt.total_seconds() / 60 / 60
+
+        elif self.labeling_type == LabelingType.OUTCOME:
+            # Get outcome for each case (form original_df)
+            df[self.LABEL_KEY] = df[self.ORIGINAL_INDEX_KEY].map(self.original_df[self.outcome_key])
 
         return df
     

@@ -1,13 +1,13 @@
-CaseID,Activity,Timestamp,Customer,Amount
-Case001,Receive Order,01/01/2025 08:00,CustomerA,0
-Case001,Ship,01/01/2025 16:00,CustomerA,0
-Case001,Receive Payment,03/01/2025 10:00,CustomerA,100
-Case002,Receive Order,02/01/2025 12:00,CustomerB,0
-Case002,Contact Supplier,02/01/2025 17:30,CustomerB,-20
-Case002,Ship,04/01/2025 10:00,CustomerB,0
-Case002,Receive Payment,05/01/2025 08:30,CustomerB,50
-Case003,Receive Order,02/01/2025 15:00,CustomerA,0
-Case003,Ship,02/01/2025 18:15,CustomerA,0
-Case003,Receive Payment,03/01/2025 10:00,CustomerA,300
-Case003,Order Returned,09/01/2025 10:00,CustomerA,0
-Case003,Issue Refund,10/01/2025 14:00,CustomerA,-300
+CaseID,Activity,Timestamp,Customer,Amount,Outcome
+Case001,Receive Order,01/01/2025 08:00,CustomerA,0,FALSE
+Case001,Ship,01/01/2025 16:00,CustomerA,0,FALSE
+Case001,Receive Payment,03/01/2025 10:00,CustomerA,100,FALSE
+Case002,Receive Order,02/01/2025 12:00,CustomerB,0,FALSE
+Case002,Contact Supplier,02/01/2025 17:30,CustomerB,-20,FALSE
+Case002,Ship,04/01/2025 10:00,CustomerB,0,FALSE
+Case002,Receive Payment,05/01/2025 08:30,CustomerB,50,FALSE
+Case003,Receive Order,02/01/2025 15:00,CustomerA,0,TRUE
+Case003,Ship,02/01/2025 18:15,CustomerA,0,TRUE
+Case003,Receive Payment,03/01/2025 10:00,CustomerA,300,TRUE
+Case003,Order Returned,09/01/2025 10:00,CustomerA,0,TRUE
+Case003,Issue Refund,10/01/2025 14:00,CustomerA,-300,TRUE

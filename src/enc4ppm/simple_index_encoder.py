@@ -22,6 +22,7 @@ class SimpleIndexEncoder(BaseEncoder):
         case_id_key: str = 'case:concept:name',
         activity_key: str = 'concept:name',
         timestamp_key: str = 'time:timestamp',
+        outcome_key: str = 'outcome',
     ) -> None:
         """
         Initialize the SimpleIndexEncoder.
@@ -34,6 +35,7 @@ class SimpleIndexEncoder(BaseEncoder):
             case_id_key: Column name for case identifiers.
             activity_key: Column name for activity names.
             timestamp_key: Column name for timestamps.
+            outcome_key: Column name for outcome predition.
         """
         super().__init__(
             labeling_type,
@@ -43,6 +45,7 @@ class SimpleIndexEncoder(BaseEncoder):
             case_id_key,
             activity_key,
             timestamp_key,
+            outcome_key,
         )
 
     

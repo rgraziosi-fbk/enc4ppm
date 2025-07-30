@@ -255,7 +255,7 @@ def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
     encoded_log = frequency_encoder.encode(
         log,
         include_latest_payload=True,
-        attributes='all',
+        attributes=['Customer', 'Amount'],
         categorical_attributes_encoding=CategoricalEncoding.STRING,
     )
 
