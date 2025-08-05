@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 
 from src.enc4ppm.frequency_encoder import FrequencyEncoder
-from src.enc4ppm.constants import LabelingType, CategoricalEncoding, PrefixStrategy
+from src.enc4ppm.constants import LabelingType, CategoricalEncoding
 from tests.data.test_log_info import *
 
 @pytest.fixture
