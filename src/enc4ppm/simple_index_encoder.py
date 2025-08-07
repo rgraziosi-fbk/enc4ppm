@@ -140,7 +140,6 @@ class SimpleIndexEncoder(BaseEncoder):
             encoded_df = super()._include_latest_payload(
                 encoded_df,
                 attributes=attributes,
-                categorical_attributes_encoding=categorical_attributes_encoding
             )
 
         return encoded_df

@@ -152,7 +152,38 @@ def gt_encoded_log():
             'event_5': 'PADDING',
             'Amount_5': 0,
             'label': 'Issue Refund',
-        }
+        },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            'Customer': 'CustomerC',
+            'event_1': 'Receive Order',
+            'Amount_1': 0,
+            'event_2': 'PADDING',
+            'Amount_2': 0,
+            'event_3': 'PADDING',
+            'Amount_3': 0,
+            'event_4': 'PADDING',
+            'Amount_4': 0,
+            'event_5': 'PADDING',
+            'Amount_5': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            'Customer': 'CustomerC',
+            'event_1': 'Receive Order',
+            'Amount_1': 0,
+            'event_2': 'Ship',
+            'Amount_2': 0,
+            'event_3': 'PADDING',
+            'Amount_3': 0,
+            'event_4': 'PADDING',
+            'Amount_4': 0,
+            'event_5': 'PADDING',
+            'Amount_5': 0,
+            'label': 'Receive Payment',
+        },
     ]
 
 

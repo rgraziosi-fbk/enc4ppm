@@ -2,7 +2,7 @@ import os
 import pickle
 from abc import ABC, abstractmethod
 import pandas as pd
-from pandas.api.types import is_object_dtype
+from pandas.api.types import is_numeric_dtype
 
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
@@ -17,6 +17,7 @@ class BaseEncoder(ABC):
 
     original_df: pd.DataFrame = pd.DataFrame()
     log_activities: list[str] = []
+    log_attributes: dict[str, list[str]] = {}
     
     def __init__(
             self,
@@ -147,7 +148,7 @@ class BaseEncoder(ABC):
 
             # Map next_index to activity in original_df
             df[self.LABEL_KEY] = df['next_index'].map(
-                lambda idx: self._get_activity_name(self.original_df.at[idx, self.activity_key]) if pd.notna(idx) else None
+                lambda idx: self._get_activity_value(self.original_df.at[idx, self.activity_key]) if pd.notna(idx) else None
             )
             
             # Drop the helper column
@@ -206,7 +207,7 @@ class BaseEncoder(ABC):
         self,
         df: pd.DataFrame,
         attributes: str | list = 'all',
-        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
+        freeze: bool = False,
     ) -> pd.DataFrame:
         """
         Add latest payload attributes to encoded DataFrame. 
@@ -226,47 +227,65 @@ class BaseEncoder(ABC):
                 if payload_attribute not in self.original_df.columns:
                     raise ValueError(f"attributes contains value '{payload_attribute}', which cannot be found in the log")
         
-        # If attributes set to 'all', obtain all available attributes from dataframe
-        if attributes == 'all':
-            attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
+        if freeze or (not freeze and not self.is_frozen):
+            # If attributes set to 'all', obtain all available attributes from dataframe
+            if attributes == 'all':
+                attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
+                
+            # Build vocabs for categorical attributes
+            for attribute_name in attributes:
+                attribute_values = self.original_df[attribute_name].unique()
+
+                if is_numeric_dtype(attribute_values):
+                    self.log_attributes[attribute_name] = None # numerical attribute
+                else:
+                    self.log_attributes[attribute_name] = attribute_values.tolist() + [self.UNKNOWN_VAL] # categorical attribute
+
+        self.attributes = attributes
 
         # Add latest payload of specified attributes to the dataframe
-        for payload_attribute in attributes:
+        for payload_attribute in self.attributes:
             attribute_values = []
             
             for _, row in df.iterrows():
-                attribute_values.append(self.original_df.loc[row[self.ORIGINAL_INDEX_KEY], payload_attribute])
+                attribute_values.append(
+                    self._get_attribute_value(payload_attribute, self.original_df.loc[row[self.ORIGINAL_INDEX_KEY], payload_attribute])
+                )
 
             df[f'{payload_attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}'] = attribute_values
-
-        # Transform to one-hot if requested
-        if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
-            categorical_columns = []
-            
-            for attribute in attributes:
-                if is_object_dtype(df[f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}']):
-                    categorical_columns.append(f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
-
-            df = pd.get_dummies(
-                df,
-                columns=categorical_columns,
-                drop_first=True,
-            )
 
         return df
 
     
-    def _get_activity_name(self, activity_name: str) -> str:
+    def _get_activity_value(self, activity_value: str) -> str:
         """
-        Return specified activity_name if present in self.log_activities, otherwise a string representing unknown activity.
+        Return specified activity_value if present in self.log_activities, otherwise a string representing unknown activity.
         """
         if self.is_frozen:
-            if activity_name in self.frozen_log_activities:
-                return activity_name
+            if activity_value in self.frozen_log_activities:
+                return activity_value
         else:
-            if activity_name in self.log_activities:
-                return activity_name
+            if activity_value in self.log_activities: # TODO: maybe remove this condition, as in the _get_attribute_value method
+                return activity_value
             
+        return self.UNKNOWN_VAL
+    
+
+    def _get_attribute_value(self, attribute_name: str, attribute_value: str) -> str:
+        """
+        Return specified attribute_value if present in self.log_attributes under attribute_name, otherwise a string representing unknown attribute.
+        """
+        # Numerical attribute
+        if attribute_name in self.log_attributes and self.log_attributes[attribute_name] == None:
+            return attribute_value
+        
+        # Categorical attribute
+        if self.is_frozen:
+            if attribute_value in self.log_attributes[attribute_name]:
+                return attribute_value
+        else:
+            return attribute_value
+        
         return self.UNKNOWN_VAL
         
     

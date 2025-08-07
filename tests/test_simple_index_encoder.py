@@ -98,6 +98,25 @@ def gt_encoded_log():
             'event_5': 'PADDING',
             'label': 'Issue Refund',
         },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            'event_1': 'Receive Order',
+            'event_2': 'PADDING',
+            'event_3': 'PADDING',
+            'event_4': 'PADDING',
+            'event_5': 'PADDING',
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            'event_1': 'Receive Order',
+            'event_2': 'Ship',
+            'event_3': 'PADDING',
+            'event_4': 'PADDING',
+            'event_5': 'PADDING',
+            'label': 'Receive Payment',
+        },
     ]
 
 @pytest.fixture
@@ -204,6 +223,29 @@ def gt_encoded_log_latest_payload():
             'Customer_latest': 'CustomerA',
             'Amount_latest': 0,
             'label': 'Issue Refund',
+        },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            'event_1': 'Receive Order',
+            'event_2': 'PADDING',
+            'event_3': 'PADDING',
+            'event_4': 'PADDING',
+            'event_5': 'PADDING',
+            'Customer_latest': 'CustomerC',
+            'Amount_latest': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            'event_1': 'Receive Order',
+            'event_2': 'Ship',
+            'event_3': 'PADDING',
+            'event_4': 'PADDING',
+            'event_5': 'PADDING',
+            'Customer_latest': 'CustomerC',
+            'Amount_latest': 0,
+            'label': 'Receive Payment',
         },
     ]
 

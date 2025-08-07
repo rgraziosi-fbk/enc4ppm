@@ -1,7 +1,9 @@
 import pandas as pd
+from pandas.api.types import is_object_dtype
 
 from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
+from .helpers import one_hot
 
 class FrequencyEncoder(BaseEncoder):
     include_latest_payload: bool = None
@@ -125,7 +127,24 @@ class FrequencyEncoder(BaseEncoder):
             encoded_df = super()._include_latest_payload(
                 encoded_df,
                 attributes=attributes,
-                categorical_attributes_encoding=categorical_attributes_encoding
+                freeze=freeze,
+            )
+
+        # Transform to one-hot if requested
+        if categorical_attributes_encoding == CategoricalEncoding.ONE_HOT:
+            categorical_columns = []
+            categorical_columns_possible_values = []
+            
+            for attribute in self.attributes:
+                if is_object_dtype(encoded_df[f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}']):
+                    categorical_columns.append(f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
+                    categorical_columns_possible_values.append(self.log_attributes[attribute])
+
+            encoded_df = one_hot(
+                encoded_df,
+                columns=categorical_columns,
+                columns_possible_values=categorical_columns_possible_values,
+                unknown_value=self.UNKNOWN_VAL,
             )
 
         return encoded_df

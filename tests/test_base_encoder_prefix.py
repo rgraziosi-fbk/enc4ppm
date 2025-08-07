@@ -84,6 +84,29 @@ def gt_encoded_log_prefix_length_up_to_2():
             'Issue Refund': 0,
             'label': 'Receive Payment',
         },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Receive Payment',
+        },
     ]
 
 
@@ -117,6 +140,18 @@ def gt_encoded_log_prefix_length_only_2():
         # Case003
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Receive Payment',
+        },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
             UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,

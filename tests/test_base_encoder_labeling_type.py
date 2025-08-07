@@ -117,6 +117,29 @@ def gt_encoded_log_next_activity():
             'Issue Refund': 0,
             'label': 'Issue Refund',
         },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Receive Payment',
+        },
     ]
 
 
@@ -258,6 +281,40 @@ def gt_encoded_log_remaining_time():
             'Issue Refund': 1,
             'label': 0.0,
         },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 52.0,
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 46.0,
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 0.0,
+        },
     ]
 
 @pytest.fixture
@@ -397,7 +454,41 @@ def gt_encoded_log_outcome():
             'Order Returned': 1,
             'Issue Refund': 1,
             'label': True,
-        }
+        },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 1,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': False,
+        },
     ]
 
 
