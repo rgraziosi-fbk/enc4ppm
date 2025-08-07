@@ -10,9 +10,13 @@ class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
     LABEL_KEY = 'label'
     LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
+    UNKNOWN_VAL = 'UNKNOWN'
 
     is_frozen: bool = False
-    train_df: pd.DataFrame = None
+    frozen_log_activities : list[str] = []
+
+    original_df: pd.DataFrame = pd.DataFrame()
+    log_activities: list[str] = []
     
     def __init__(
             self,
@@ -50,11 +54,8 @@ class BaseEncoder(ABC):
         The _encode_template method is a template method which performs both common operations shared amongs all encoders and the specific logic of each encoder.
         In particular, common operations are: _preprocess_log, _label_log, _apply_prefix_strategy and _postprocess_log; specific encoding is performed by the _encode method.
         """
-        if 'freeze' in kwargs and kwargs['freeze']:
-            self.is_frozen = True
-            self.train_df = df
-
         df = self._preprocess_log(df)
+        self._apply_freeze(**kwargs)
 
         encoded_df = self._encode(df, **kwargs)
 
@@ -67,7 +68,7 @@ class BaseEncoder(ABC):
 
     def _preprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Common preprocessing logic shared by all encoders. The method validates the provided log and save it for later use.
+        Common preprocessing logic shared by all encoders. The method validates the provided log and saves it for later use.
         """
         if not isinstance(df, pd.DataFrame):
             raise TypeError("df must be a pandas DataFrame")
@@ -111,8 +112,23 @@ class BaseEncoder(ABC):
 
         # Save original df for later use
         self.original_df = df
+        self.log_activities = df[self.activity_key].unique().tolist() + [self.UNKNOWN_VAL]
 
         return df
+    
+
+    def _apply_freeze(self, **kwargs) -> None:
+        """
+        Apply freeze logic. If freeze is True, the encoder will be frozen with the provided parameters.
+        """
+        if 'freeze' in kwargs and kwargs['freeze']:
+            self.is_frozen = True
+            
+            # Save info about the log
+            self.frozen_log_activities = self.log_activities
+            
+        if self.is_frozen:
+            self.log_activities = self.frozen_log_activities
 
     
     def _label_log(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -130,7 +146,9 @@ class BaseEncoder(ABC):
             df['next_index'] = df.groupby(self.case_id_key)[self.ORIGINAL_INDEX_KEY].shift(-1)
 
             # Map next_index to activity in original_df
-            df[self.LABEL_KEY] = df['next_index'].map(self.original_df[self.activity_key])
+            df[self.LABEL_KEY] = df['next_index'].map(
+                lambda idx: self._get_activity_name(self.original_df.at[idx, self.activity_key]) if pd.notna(idx) else None
+            )
             
             # Drop the helper column
             df = df.drop(columns=['next_index'])
@@ -143,7 +161,7 @@ class BaseEncoder(ABC):
             df[self.LABEL_KEY] = (last_timestamp_per_case - df[self.timestamp_key]).dt.total_seconds() / 60 / 60
 
         elif self.labeling_type == LabelingType.OUTCOME:
-            # Get outcome for each case (form original_df)
+            # Get outcome for each case (from original_df)
             df[self.LABEL_KEY] = df[self.ORIGINAL_INDEX_KEY].map(self.original_df[self.outcome_key])
 
         return df
@@ -237,6 +255,20 @@ class BaseEncoder(ABC):
 
         return df
 
+    
+    def _get_activity_name(self, activity_name: str) -> str:
+        """
+        Return specified activity_name if present in self.log_activities, otherwise a string representing unknown activity.
+        """
+        if self.is_frozen:
+            if activity_name in self.frozen_log_activities:
+                return activity_name
+        else:
+            if activity_name in self.log_activities:
+                return activity_name
+            
+        return self.UNKNOWN_VAL
+        
     
     def save(self, filepath: str) -> None:
         """

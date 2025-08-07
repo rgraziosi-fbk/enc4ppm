@@ -18,6 +18,7 @@ def gt_encoded_log_next_activity():
         # Case001
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -28,6 +29,7 @@ def gt_encoded_log_next_activity():
         },
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -39,6 +41,7 @@ def gt_encoded_log_next_activity():
         # Case002
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -49,6 +52,7 @@ def gt_encoded_log_next_activity():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -59,6 +63,7 @@ def gt_encoded_log_next_activity():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -70,6 +75,7 @@ def gt_encoded_log_next_activity():
         # Case003
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -80,6 +86,7 @@ def gt_encoded_log_next_activity():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -90,6 +97,7 @@ def gt_encoded_log_next_activity():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -100,6 +108,7 @@ def gt_encoded_log_next_activity():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -117,6 +126,7 @@ def gt_encoded_log_remaining_time():
         # Case001
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -127,6 +137,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -137,6 +148,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -148,6 +160,7 @@ def gt_encoded_log_remaining_time():
         # Case002
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -158,6 +171,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -168,6 +182,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -178,6 +193,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -189,6 +205,7 @@ def gt_encoded_log_remaining_time():
         # Case003
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -199,6 +216,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -209,6 +227,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -219,6 +238,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -229,6 +249,7 @@ def gt_encoded_log_remaining_time():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -245,6 +266,7 @@ def gt_encoded_log_outcome():
         # Case001
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -255,6 +277,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -265,6 +288,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -276,6 +300,7 @@ def gt_encoded_log_outcome():
         # Case002
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -286,6 +311,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -296,6 +322,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -306,6 +333,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -317,6 +345,7 @@ def gt_encoded_log_outcome():
         # Case003
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -327,6 +356,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -337,6 +367,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -347,6 +378,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -357,6 +389,7 @@ def gt_encoded_log_outcome():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 1,
@@ -414,8 +447,6 @@ def test_outcome(log, gt_encoded_log_outcome):
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_outcome) == len(encoded_log)
-
-    print(encoded_log)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_outcome)):

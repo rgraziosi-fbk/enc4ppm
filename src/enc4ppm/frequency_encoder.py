@@ -95,7 +95,6 @@ class FrequencyEncoder(BaseEncoder):
             categorical_attributes_encoding = self.categorical_attributes_encoding
 
         grouped = df.groupby(self.case_id_key)
-        activities = df[self.activity_key].unique().tolist()
 
         rows = []
         
@@ -112,8 +111,11 @@ class FrequencyEncoder(BaseEncoder):
                     self.ORIGINAL_INDEX_KEY: prefix.index[-1],
                 }
 
-                for activity in activities:
+                for activity in self.log_activities[:-1]:
                     row[activity] = counts.get(activity, 0)
+                
+                # Handle unknown activities
+                row[self.UNKNOWN_VAL] = sum(counts.get(activity, 0) for activity in counts.index if activity not in self.log_activities[:-1])
 
                 rows.append(row)
 

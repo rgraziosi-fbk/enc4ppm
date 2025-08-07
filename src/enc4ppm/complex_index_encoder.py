@@ -169,8 +169,6 @@ class ComplexIndexEncoder(BaseEncoder):
                     if is_object_dtype(encoded_df[f'{dynamic_attribute}_{i}']):
                         categorical_columns.append(f'{dynamic_attribute}_{i}')
 
-            print(categorical_columns)
-
             encoded_df = pd.get_dummies(
                 encoded_df,
                 columns=categorical_columns,
