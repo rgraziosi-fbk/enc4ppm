@@ -11,3 +11,6 @@ Case003,Ship,02/01/2025 18:15,CustomerA,0,TRUE
 Case003,Receive Payment,03/01/2025 10:00,CustomerA,300,TRUE
 Case003,Order Returned,09/01/2025 10:00,CustomerA,0,TRUE
 Case003,Issue Refund,10/01/2025 14:00,CustomerA,-300,TRUE
+Case004,Receive Order,03/01/2025 11:00,CustomerC,0,FALSE
+Case004,Ship,03/01/2025 17:00,CustomerC,0,FALSE
+Case004,Receive Payment,05/01/2025 15:00,CustomerC,500,FALSE

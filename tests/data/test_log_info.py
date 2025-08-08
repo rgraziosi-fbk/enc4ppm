@@ -6,4 +6,6 @@ CASE_ID_KEY = 'CaseID'
 ACTIVITY_KEY = 'Activity'
 TIMESTAMP_KEY = 'Timestamp'
 
+UNKNOWN_VAL = 'UNKNOWN'
+
 NUM_ACTIVITIES = 6
