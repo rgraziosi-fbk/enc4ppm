@@ -112,7 +112,7 @@ class FrequencyEncoder(BaseEncoder):
             for attribute in self.attributes:
                 if is_object_dtype(encoded_df[f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}']):
                     categorical_columns.append(f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
-                    categorical_columns_possible_values.append(self.log_attributes[attribute])
+                    categorical_columns_possible_values.append(self.log_attributes[attribute]['values'])
 
             encoded_df = one_hot(
                 encoded_df,

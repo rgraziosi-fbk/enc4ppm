@@ -1,5 +1,6 @@
 import os
 import pickle
+import pprint
 from abc import ABC, abstractmethod
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
@@ -8,15 +9,18 @@ from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
-    LABEL_KEY = 'label'
+    EVENT_COL_PREFIX_NAME = 'event'
     LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
+    LABEL_KEY = 'label'
     UNKNOWN_VAL = 'UNKNOWN'
+    PADDING_CAT_VAL = 'PADDING'
+    PADDING_NUM_VAL = 0.0
 
     is_frozen: bool = False
 
     original_df: pd.DataFrame = pd.DataFrame()
     log_activities: list[str] = []
-    log_attributes: dict[str, list[str]] = {}
+    log_attributes: dict[str, dict[str, str | list | dict]] = {}
     
     def __init__(
             self,
@@ -160,10 +164,24 @@ class BaseEncoder(ABC):
         for attribute_name in self.attributes:
             attribute_values = self.original_df[attribute_name].unique()
 
+            is_numeric = is_numeric_dtype(attribute_values)
+            is_static = self.original_df.groupby(self.case_id_key)[attribute_name].nunique().eq(1).all()
+
+            attribute_dict = {
+                'type': 'numerical' if is_numeric else 'categorical',
+                'scope': 'trace' if is_static else 'event',
+            }
+
             if is_numeric_dtype(attribute_values):
-                self.log_attributes[attribute_name] = None # numerical attribute
+                attribute_dict['values'] = {
+                    'min': attribute_values.min().item(),
+                    'max': attribute_values.max().item(),
+                    'mean': attribute_values.mean().item(),
+                }
             else:
-                self.log_attributes[attribute_name] = attribute_values.tolist() + [self.UNKNOWN_VAL] # categorical attribute
+                attribute_dict['values'] = attribute_values.tolist() + [self.UNKNOWN_VAL]
+                
+            self.log_attributes[attribute_name] =  attribute_dict
 
     
     def _preprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -285,23 +303,46 @@ class BaseEncoder(ABC):
         """
         Return specified attribute_value if present in self.log_attributes under attribute_name, otherwise a string representing unknown attribute.
         """
+        if attribute_name not in self.log_attributes:
+            raise ValueError(f'Attribute {attribute_name} not found in log attributes {list(self.log_attributes.keys())}')
+        
         # Numerical attribute
-        if attribute_name in self.log_attributes and self.log_attributes[attribute_name] == None:
+        if self.log_attributes[attribute_name]['type'] == 'numerical':
             return attribute_value
         
         # Categorical attribute
-        if attribute_value in self.log_attributes[attribute_name]:
+        if attribute_value in self.log_attributes[attribute_name]['values']:
             return attribute_value
         
         return self.UNKNOWN_VAL
         
     
+    def summary(self) -> None:
+        """
+        Print a summary of the encoder. Only works if the encoder has been frozen.
+        """
+        if not self.is_frozen:
+            raise RuntimeError("Encoder must be frozen before summarizing.")
+
+        # Print a summary of the encoder's configuration and learned parameters
+        print("Encoder Summary:")
+        print(f" - Encoder Type: {self.__class__.__name__}")
+        print(f" - Labeling Type: {self.labeling_type}")
+        print(f" - Categorical Encoding: {self.categorical_encoding}")
+        print(f" - Prefix Length: {self.prefix_length}")
+        print(f" - Prefix Strategy: {self.prefix_strategy}")
+        print(f" - Timestamp Format: {self.timestamp_format}")
+        print(f" - Case ID Key: {self.case_id_key}")
+        print(f" - Activity Key: {self.activity_key}")
+        print(f" - Timestamp Key: {self.timestamp_key}")
+        print(f" - Log Activities ({len(self.log_activities)}): {self.log_activities}")
+        print(f" - Log Attributes ({len(self.log_attributes)}):")
+        pprint.pprint(self.log_attributes)
+
+
     def save(self, filepath: str) -> None:
         """
-        Save the encoder instance to a pickle file.
-
-        Only works if the encoder is frozen (is_frozen == True).
-        Raises RuntimeError if called when is_frozen is False.
+        Save the encoder instance to a pickle file. Only works if the encoder has been frozen.
 
         Args:
             filepath (str): Path to the pickle file where the encoder will be saved.

@@ -4,8 +4,7 @@ from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class SimpleIndexEncoder(BaseEncoder):
-    PADDING_VALUE = 'PADDING'
-    EVENT_COL_NAME = 'event'
+    
 
     def __init__(
         self,
@@ -92,9 +91,9 @@ class SimpleIndexEncoder(BaseEncoder):
 
                 for i in range(1, min(self.prefix_length, max_prefix_length)+1):
                     if i <= prefix_length:
-                        row[f'{self.EVENT_COL_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
+                        row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
                     else:
-                        row[f'{self.EVENT_COL_NAME}_{i}'] = self.PADDING_VALUE
+                        row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self.PADDING_CAT_VAL
                 
                 rows.append(row)
 
@@ -103,7 +102,7 @@ class SimpleIndexEncoder(BaseEncoder):
         if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
             encoded_df = pd.get_dummies(
                 encoded_df,
-                columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
+                columns=[f'{self.EVENT_COL_PREFIX_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
                 drop_first=True,
             )
 

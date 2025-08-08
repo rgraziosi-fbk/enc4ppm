@@ -190,19 +190,16 @@ def gt_encoded_log():
 def test_complex_index_encoder(log, gt_encoded_log):
     complex_index_encoder = ComplexIndexEncoder(
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        attributes=['Customer', 'Amount'],
         timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
     )
-    encoded_log = complex_index_encoder.encode(
-        log,
-        static_attributes=['Customer'],
-        dynamic_attributes=['Amount'],
-    )
+    encoded_log = complex_index_encoder.encode(log)
 
     assert len(gt_encoded_log) == len(encoded_log)
-    assert len(encoded_log.columns) == 5*2 + 1 + 1 + 1 # 5*2 is max trace length (activity+amount), + 1 is case id, + 1 is customer (static attribute), + 1 is label
+    assert len(gt_encoded_log[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log)):
