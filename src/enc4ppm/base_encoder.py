@@ -13,7 +13,6 @@ class BaseEncoder(ABC):
     UNKNOWN_VAL = 'UNKNOWN'
 
     is_frozen: bool = False
-    frozen_log_activities : list[str] = []
 
     original_df: pd.DataFrame = pd.DataFrame()
     log_activities: list[str] = []
@@ -22,6 +21,8 @@ class BaseEncoder(ABC):
     def __init__(
             self,
             labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+            attributes: list[str] | str = [],
+            categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
             prefix_length: int = None,
             prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
             timestamp_format: str = None,
@@ -31,6 +32,8 @@ class BaseEncoder(ABC):
             outcome_key: str = 'outcome',
         ) -> None:
         self.labeling_type = labeling_type
+        self.attributes = attributes
+        self.categorical_encoding = categorical_encoding
         self.prefix_length = prefix_length
         self.prefix_strategy = prefix_strategy
         self.timestamp_format = timestamp_format
@@ -55,10 +58,23 @@ class BaseEncoder(ABC):
         The _encode_template method is a template method which performs both common operations shared amongs all encoders and the specific logic of each encoder.
         In particular, common operations are: _preprocess_log, _label_log, _apply_prefix_strategy and _postprocess_log; specific encoding is performed by the _encode method.
         """
-        df = self._preprocess_log(df)
-        self._apply_freeze(**kwargs)
+        self.original_df = df
+        
+        self._check_log(df)
+        self._check_parameters(df)
+        
+        if not self.is_frozen:
+            self._extract_log_data(df)
 
-        encoded_df = self._encode(df, **kwargs)
+        if 'freeze' in kwargs and kwargs['freeze']:
+            self.is_frozen = True
+        
+        df = self._preprocess_log(df)
+
+        encoded_df = self._encode(df)
+
+        if self.ORIGINAL_INDEX_KEY not in encoded_df.columns:
+            raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column when implementing your own custom encoder!')
 
         encoded_df = self._label_log(encoded_df)
         encoded_df = self._apply_prefix_strategy(encoded_df)
@@ -67,9 +83,9 @@ class BaseEncoder(ABC):
         return encoded_df
     
 
-    def _preprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _check_log(self, df: pd.DataFrame) -> None:
         """
-        Common preprocessing logic shared by all encoders. The method validates the provided log and saves it for later use.
+        Checks and validations on input log.
         """
         if not isinstance(df, pd.DataFrame):
             raise TypeError("df must be a pandas DataFrame")
@@ -80,13 +96,35 @@ class BaseEncoder(ABC):
         for col in [self.case_id_key, self.activity_key, self.timestamp_key]:
             if col not in df.columns:
                 raise ValueError(f"df must contain column '{col}'")
-            
+
+
+    def _check_parameters(self, df: pd.DataFrame) -> None:
+        """
+        Checks and validations on encoder parameters.
+        """
+        # Labeling type
         if not isinstance(self.labeling_type, LabelingType):
             raise TypeError(f'labeling_type must be a valid LabelingType: {[e.name for e in LabelingType]}')
         
         if self.labeling_type == LabelingType.OUTCOME and (self.outcome_key is None or self.outcome_key not in df.columns):
             raise ValueError("If labeling_type is set to OUTCOME, then you must specify the outcome_key parameter and it must be present in the DataFrame")
         
+        # Attributes
+        if not isinstance(self.attributes, str) and not isinstance(self.attributes, list):
+            raise ValueError(f'attributes must be either a list of strings or the string "all"')
+
+        if isinstance(self.attributes, str) and self.attributes != 'all':
+            raise ValueError("Since attributes is set to a string, then it must be set to the value 'all'. Otherwise, set it to a list of strings indicating the attributes you want to consider.")
+        
+        if isinstance(self.attributes, list):
+            for attribute in self.attributes:
+                if not isinstance(attribute, str):
+                    raise ValueError('Since attributes is a list, it must contain only string elements')
+                
+                if attribute not in self.original_df.columns:
+                    raise ValueError(f"attributes contains value '{attribute}', which cannot be found in the log")
+        
+        # Prefix length and strategy
         if self.prefix_length is not None and (not isinstance(self.prefix_length, int) or self.prefix_length <= 0):
             raise ValueError(f'prefix_length must be either None or a positive integer ({self.prefix_length} has been provided instead)')
         
@@ -95,41 +133,47 @@ class BaseEncoder(ABC):
         
         if not isinstance(self.prefix_strategy, PrefixStrategy):
             raise TypeError(f'prefix_strategy must be a valid PrefixStrategy: {[e.name for e in PrefixStrategy]}')
+
+
+    def _extract_log_data(self, df: pd.DataFrame) -> None:
+        """
+        From log data, create necessary variables for later use (e.g: determines prefix length, build activity and attribute vocabs, etc.)
+        """
+        # Set prefix length
+        max_prefix_length_log = df.groupby(self.case_id_key).size().max().item()
+        
+        if self.prefix_length is None:
+            self.prefix_length = max_prefix_length_log
+        else:
+            if self.prefix_length > max_prefix_length_log:
+                print(f'Warning: provided prefix_length {self.prefix_length} is higher than maximum prefix length found in log {max_prefix_length_log}! Setting prefix_length to {max_prefix_length_log}.')
+
+            self.prefix_length = min(self.prefix_length, max_prefix_length_log)
+
+        # Build activity vocab
+        self.log_activities = df[self.activity_key].unique().tolist() + [self.UNKNOWN_VAL]
+
+        # Build attribute vocabs
+        if self.attributes == 'all':
+            self.attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
             
-        if not self.is_frozen:
-            # Get prefix length to consider based both on provided one and maximum found in log
-            max_prefix_length_log = df.groupby(self.case_id_key).size().max().item()
-            
-            if self.prefix_length is None:
-                self.prefix_length = max_prefix_length_log
+        for attribute_name in self.attributes:
+            attribute_values = self.original_df[attribute_name].unique()
+
+            if is_numeric_dtype(attribute_values):
+                self.log_attributes[attribute_name] = None # numerical attribute
             else:
-                if self.prefix_length > max_prefix_length_log:
-                    print(f'Warning: provided prefix_length {self.prefix_length} is higher than maximum prefix length found in log {max_prefix_length_log}! Setting prefix_length to {max_prefix_length_log}.')
+                self.log_attributes[attribute_name] = attribute_values.tolist() + [self.UNKNOWN_VAL] # categorical attribute
 
-                self.prefix_length = min(self.prefix_length, max_prefix_length_log)
-
+    
+    def _preprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Common preprocessing logic shared by all encoders.
+        """
         # Cast timestamp column to datetime
         df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
 
-        # Save original df for later use
-        self.original_df = df
-        self.log_activities = df[self.activity_key].unique().tolist() + [self.UNKNOWN_VAL]
-
         return df
-    
-
-    def _apply_freeze(self, **kwargs) -> None:
-        """
-        Apply freeze logic. If freeze is True, the encoder will be frozen with the provided parameters.
-        """
-        if 'freeze' in kwargs and kwargs['freeze']:
-            self.is_frozen = True
-            
-            # Save info about the log
-            self.frozen_log_activities = self.log_activities
-            
-        if self.is_frozen:
-            self.log_activities = self.frozen_log_activities
 
     
     def _label_log(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -203,56 +247,26 @@ class BaseEncoder(ABC):
         return df
 
     
-    def _include_latest_payload(
-        self,
-        df: pd.DataFrame,
-        attributes: str | list = 'all',
-        freeze: bool = False,
-    ) -> pd.DataFrame:
+    def _include_latest_payload(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Add latest payload attributes to encoded DataFrame. 
         """
-        if attributes == None: return df
+        if self.attributes == [] or self.attributes is None:
+            return df
+        
         if self.ORIGINAL_INDEX_KEY not in df.columns:
             raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _include_latest_payload')
 
-        if isinstance(attributes, str) and attributes != 'all':
-            raise ValueError("Since attributes is set to a string, then it must be set to the value 'all'. Otherwise, set it to a list of strings indicating the attributes you want to consider.")
-        
-        if isinstance(attributes, list):
-            for payload_attribute in attributes:
-                if not isinstance(payload_attribute, str):
-                    raise ValueError('Since attributes is a list, it must contain only string elements')
-                
-                if payload_attribute not in self.original_df.columns:
-                    raise ValueError(f"attributes contains value '{payload_attribute}', which cannot be found in the log")
-        
-        if freeze or (not freeze and not self.is_frozen):
-            # If attributes set to 'all', obtain all available attributes from dataframe
-            if attributes == 'all':
-                attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
-                
-            # Build vocabs for categorical attributes
-            for attribute_name in attributes:
-                attribute_values = self.original_df[attribute_name].unique()
-
-                if is_numeric_dtype(attribute_values):
-                    self.log_attributes[attribute_name] = None # numerical attribute
-                else:
-                    self.log_attributes[attribute_name] = attribute_values.tolist() + [self.UNKNOWN_VAL] # categorical attribute
-
-        self.attributes = attributes
-
         # Add latest payload of specified attributes to the dataframe
-        for payload_attribute in self.attributes:
+        for attribute_name in self.attributes:
             attribute_values = []
             
             for _, row in df.iterrows():
                 attribute_values.append(
-                    self._get_attribute_value(payload_attribute, self.original_df.loc[row[self.ORIGINAL_INDEX_KEY], payload_attribute])
+                    self._get_attribute_value(attribute_name, self.original_df.loc[row[self.ORIGINAL_INDEX_KEY], attribute_name])
                 )
 
-            df[f'{payload_attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}'] = attribute_values
+            df[f'{attribute_name}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}'] = attribute_values
 
         return df
 
@@ -261,12 +275,8 @@ class BaseEncoder(ABC):
         """
         Return specified activity_value if present in self.log_activities, otherwise a string representing unknown activity.
         """
-        if self.is_frozen:
-            if activity_value in self.frozen_log_activities:
-                return activity_value
-        else:
-            if activity_value in self.log_activities: # TODO: maybe remove this condition, as in the _get_attribute_value method
-                return activity_value
+        if activity_value in self.log_activities:
+            return activity_value
             
         return self.UNKNOWN_VAL
     
@@ -280,10 +290,7 @@ class BaseEncoder(ABC):
             return attribute_value
         
         # Categorical attribute
-        if self.is_frozen:
-            if attribute_value in self.log_attributes[attribute_name]:
-                return attribute_value
-        else:
+        if attribute_value in self.log_attributes[attribute_name]:
             return attribute_value
         
         return self.UNKNOWN_VAL
@@ -301,6 +308,9 @@ class BaseEncoder(ABC):
         """
         if not self.is_frozen:
             raise RuntimeError("Encoder must be frozen before saving. Call with freeze=True during encoding.")
+        
+        # Do not save original_df
+        self.original_df = None
         
         with open(filepath, 'wb') as f:
             pickle.dump(self, f)

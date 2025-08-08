@@ -7,15 +7,14 @@ class SimpleIndexEncoder(BaseEncoder):
     PADDING_VALUE = 'PADDING'
     EVENT_COL_NAME = 'event'
 
-    activity_encoding: CategoricalEncoding = None
-    include_latest_payload: bool = None
-    attributes: str | list = None
-    categorical_attributes_encoding: CategoricalEncoding = None
-
     def __init__(
         self,
         *,
+        include_latest_payload: bool = False,
+
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        attributes: list[str] | str = [],
+        categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
         prefix_length: int = None,
         prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
         timestamp_format: str = None,
@@ -28,7 +27,10 @@ class SimpleIndexEncoder(BaseEncoder):
         Initialize the SimpleIndexEncoder.
 
         Args:
+            include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
             labeling_type: Label type to apply to examples.
+            attributes: Which attributes to consider. Can be a list of the attributes to consider or the string 'all' (all attributes found in the log will be encoded).
+            categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
             prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.
             prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).
             timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.
@@ -39,6 +41,8 @@ class SimpleIndexEncoder(BaseEncoder):
         """
         super().__init__(
             labeling_type,
+            attributes,
+            categorical_encoding,
             prefix_length,
             prefix_strategy,
             timestamp_format,
@@ -48,16 +52,14 @@ class SimpleIndexEncoder(BaseEncoder):
             outcome_key,
         )
 
+        self.include_latest_payload = include_latest_payload
+
     
     def encode(
         self,
         df: pd.DataFrame,
         *,
         freeze: bool = False,
-        activity_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
-        include_latest_payload: bool = False,
-        attributes: str | list = 'all',
-        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
     ) -> pd.DataFrame:
         """
         Encode the provided DataFrame with simple-index encoding and apply the specified labeling.
@@ -65,45 +67,14 @@ class SimpleIndexEncoder(BaseEncoder):
         Args:
             df: DataFrame to encode.
             freeze: Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.
-            activity_encoding: How to encode activity names. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
-            include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.
-            attributes: Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.
-            categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
 
         Returns:
             The encoded DataFrame.
         """
-        return super()._encode_template(
-            df,
-            freeze=freeze,
-            activity_encoding=activity_encoding,
-            include_latest_payload=include_latest_payload,
-            attributes=attributes,
-            categorical_attributes_encoding=categorical_attributes_encoding,
-        )
+        return super()._encode_template(df, freeze=freeze)
 
 
-    def _encode(
-        self,
-        df: pd.DataFrame,
-        freeze: bool,
-        activity_encoding: CategoricalEncoding,
-        include_latest_payload: bool = False,
-        attributes: str | list = 'all',
-        categorical_attributes_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
-    ) -> pd.DataFrame:
-        if freeze:
-            self.activity_encoding = activity_encoding
-            self.include_latest_payload = include_latest_payload
-            self.attributes = attributes
-            self.categorical_attributes_encoding = categorical_attributes_encoding
-
-        if self.is_frozen:
-            activity_encoding = self.activity_encoding
-            include_latest_payload = self.include_latest_payload
-            attributes = self.attributes
-            categorical_attributes_encoding = self.categorical_attributes_encoding
-
+    def _encode(self, df: pd.DataFrame) -> pd.DataFrame:
         grouped = df.groupby(self.case_id_key)
         max_prefix_length = grouped.size().max()
 
@@ -129,17 +100,14 @@ class SimpleIndexEncoder(BaseEncoder):
 
         encoded_df = pd.DataFrame(rows)
 
-        if activity_encoding == CategoricalEncoding.ONE_HOT:
+        if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
             encoded_df = pd.get_dummies(
                 encoded_df,
                 columns=[f'{self.EVENT_COL_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
                 drop_first=True,
             )
 
-        if include_latest_payload:
-            encoded_df = super()._include_latest_payload(
-                encoded_df,
-                attributes=attributes,
-            )
+        if self.include_latest_payload:
+            encoded_df = super()._include_latest_payload(encoded_df)
 
         return encoded_df

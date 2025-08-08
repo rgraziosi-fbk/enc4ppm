@@ -727,18 +727,16 @@ def test_frequency_encoder(log, gt_encoded_log):
 
 def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
     frequency_encoder = FrequencyEncoder(
+        include_latest_payload=True,
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        attributes=['Customer', 'Amount'],
+        categorical_encoding=CategoricalEncoding.STRING,
         timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
     )
-    encoded_log = frequency_encoder.encode(
-        log,
-        include_latest_payload=True,
-        attributes=['Customer', 'Amount'],
-        categorical_attributes_encoding=CategoricalEncoding.STRING,
-    )
+    encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_latest_payload) == len(encoded_log)
     assert len(gt_encoded_log_latest_payload[0]) == len(encoded_log.columns)
@@ -750,18 +748,16 @@ def test_frequency_encoder_latest_payload(log, gt_encoded_log_latest_payload):
 
 def test_frequency_encoder_onehot_latest_payload(log, gt_encoded_log_onehot_latest_payload):
     frequency_encoder = FrequencyEncoder(
+        include_latest_payload=True,
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        attributes=['Customer', 'Amount'],
+        categorical_encoding=CategoricalEncoding.ONE_HOT,
         timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
         timestamp_key=TIMESTAMP_KEY,
     )
-    encoded_log = frequency_encoder.encode(
-        log,
-        include_latest_payload=True,
-        attributes=['Customer', 'Amount'],
-        categorical_attributes_encoding=CategoricalEncoding.ONE_HOT,
-    )
+    encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_onehot_latest_payload) == len(encoded_log)
     assert len(gt_encoded_log_onehot_latest_payload[0]) == len(encoded_log.columns)
@@ -795,7 +791,10 @@ def test_frequency_encoder_unknown_values(log, gt_encoded_log_unknown_values):
 
 def test_frequency_encoder_latest_payload_unknown_values(log, gt_encoded_log_latest_payload_unknown_values):
     frequency_encoder = FrequencyEncoder(
+        include_latest_payload=True,
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        attributes=['Customer', 'Amount'],
+        categorical_encoding=CategoricalEncoding.STRING,
         timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
@@ -804,19 +803,8 @@ def test_frequency_encoder_latest_payload_unknown_values(log, gt_encoded_log_lat
     train_log = log[log[CASE_ID_KEY].isin(['Case001', 'Case002'])].copy()
     test_log = log[log[CASE_ID_KEY].isin(['Case003', 'Case004'])].copy()
 
-    _ = frequency_encoder.encode(
-        train_log,
-        freeze=True,
-        include_latest_payload=True,
-        attributes=['Customer', 'Amount'],
-        categorical_attributes_encoding=CategoricalEncoding.STRING,
-    )
-    encoded_test_log = frequency_encoder.encode(
-        test_log,
-        include_latest_payload=True,
-        attributes=['Customer', 'Amount'],
-        categorical_attributes_encoding=CategoricalEncoding.STRING,
-    )
+    _ = frequency_encoder.encode(train_log, freeze=True)
+    encoded_test_log = frequency_encoder.encode(test_log)
 
     assert len(gt_encoded_log_latest_payload_unknown_values) == len(encoded_test_log)
     assert len(gt_encoded_log_latest_payload_unknown_values[0]) == len(encoded_test_log.columns)
@@ -828,7 +816,10 @@ def test_frequency_encoder_latest_payload_unknown_values(log, gt_encoded_log_lat
 
 def test_frequency_encoder_onehot_latest_payload_unknown_values(log, gt_encoded_log_onehot_latest_payload_unknown_values):
     frequency_encoder = FrequencyEncoder(
+        include_latest_payload=True,
         labeling_type=LabelingType.NEXT_ACTIVITY,
+        attributes=['Customer', 'Amount'],
+        categorical_encoding=CategoricalEncoding.ONE_HOT,
         timestamp_format=TIMESTAMP_FORMAT,
         case_id_key=CASE_ID_KEY,
         activity_key=ACTIVITY_KEY,
@@ -837,19 +828,8 @@ def test_frequency_encoder_onehot_latest_payload_unknown_values(log, gt_encoded_
     train_log = log[log[CASE_ID_KEY].isin(['Case001', 'Case002'])].copy()
     test_log = log[log[CASE_ID_KEY].isin(['Case003', 'Case004'])].copy()
 
-    _ = frequency_encoder.encode(
-        train_log,
-        freeze=True,
-        include_latest_payload=True,
-        attributes=['Customer', 'Amount'],
-        categorical_attributes_encoding=CategoricalEncoding.ONE_HOT,
-    )
-    encoded_test_log = frequency_encoder.encode(
-        test_log,
-        include_latest_payload=True,
-        attributes=['Customer', 'Amount'],
-        categorical_attributes_encoding=CategoricalEncoding.ONE_HOT,
-    )
+    _ = frequency_encoder.encode(train_log, freeze=True)
+    encoded_test_log = frequency_encoder.encode(test_log)
 
     assert len(gt_encoded_log_onehot_latest_payload_unknown_values) == len(encoded_test_log)
     assert len(gt_encoded_log_onehot_latest_payload_unknown_values[0]) == len(encoded_test_log.columns)

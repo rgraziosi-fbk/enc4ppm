@@ -177,6 +177,7 @@ def test_prefix_length_up_to_2(log, gt_encoded_log_prefix_length_up_to_2):
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_prefix_length_up_to_2) == len(encoded_log)
+    assert len(gt_encoded_log_prefix_length_up_to_2[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_prefix_length_up_to_2)):
@@ -196,6 +197,7 @@ def test_frequency_encoder_prefix_length_only_2(log, gt_encoded_log_prefix_lengt
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_prefix_length_only_2) == len(encoded_log)
+    assert len(gt_encoded_log_prefix_length_only_2[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_prefix_length_only_2)):

@@ -503,6 +503,7 @@ def test_next_activity(log, gt_encoded_log_next_activity):
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_next_activity) == len(encoded_log)
+    assert len(gt_encoded_log_next_activity[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_next_activity)):
@@ -520,6 +521,7 @@ def test_remaining_time(log, gt_encoded_log_remaining_time):
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_remaining_time) == len(encoded_log)
+    assert len(gt_encoded_log_remaining_time[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_remaining_time)):
@@ -538,6 +540,7 @@ def test_outcome(log, gt_encoded_log_outcome):
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_outcome) == len(encoded_log)
+    assert len(gt_encoded_log_outcome[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_outcome)):
