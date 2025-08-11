@@ -73,9 +73,8 @@ class SimpleIndexEncoder(BaseEncoder):
 
 
     def _encode(self, df: pd.DataFrame) -> pd.DataFrame:
-        grouped = df.groupby(self.case_id_key)
-
         rows = []
+        grouped = df.groupby(self.case_id_key)
 
         for case_id, case_events in grouped:
             case_events = case_events.sort_values(self.timestamp_key).reset_index()
@@ -115,7 +114,7 @@ class SimpleIndexEncoder(BaseEncoder):
                 if attribute['type'] == 'categorical':
                     # For latest payload do not consider PADDING value
                     attribute_possible_values = [attribute_value for attribute_value in attribute['values'] if attribute_value != self.PADDING_CAT_VAL]
-                    
+
                     categorical_columns.append(f'{attribute_name}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
                     categorical_columns_possible_values.append(attribute_possible_values)
 

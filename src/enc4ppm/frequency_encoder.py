@@ -73,9 +73,8 @@ class FrequencyEncoder(BaseEncoder):
 
 
     def _encode(self, df: pd.DataFrame) -> pd.DataFrame:
-        grouped = df.groupby(self.case_id_key)
-
         rows = []
+        grouped = df.groupby(self.case_id_key)
         
         for case_id, case_events in grouped:
             case_events = case_events.sort_values(self.timestamp_key)

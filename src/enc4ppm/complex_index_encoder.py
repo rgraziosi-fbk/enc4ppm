@@ -1,8 +1,8 @@
 import pandas as pd
-from pandas.api.types import is_object_dtype
 
 from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
+from .helpers import one_hot
 
 class ComplexIndexEncoder(BaseEncoder):
     def __init__(
@@ -68,10 +68,8 @@ class ComplexIndexEncoder(BaseEncoder):
     
 
     def _encode(self, df: pd.DataFrame) -> pd.DataFrame:
-        grouped = df.groupby(self.case_id_key)
-        max_prefix_length = grouped.size().max()
-
         rows = []
+        grouped = df.groupby(self.case_id_key)
 
         for case_id, case_events in grouped:
             case_events = case_events.sort_values(self.timestamp_key).reset_index()
@@ -83,25 +81,26 @@ class ComplexIndexEncoder(BaseEncoder):
                     self.ORIGINAL_INDEX_KEY: case_events.loc[prefix_length-1, 'index'],
                 }
 
-                # Add static attributes
+                # Add trace attributes
                 for attribute_name, attribute in self.log_attributes.items():
                     if attribute['scope'] != 'trace': continue
                     
-                    row[attribute_name] = case_events.loc[prefix_length-1, attribute_name]
+                    row[attribute_name] = self._get_attribute_value(attribute_name, case_events.loc[prefix_length-1, attribute_name])
 
-                for i in range(1, min(self.prefix_length, max_prefix_length)+1):
-                    # Add activities
+                # Add activities
+                for i in range(1, self.prefix_length+1):
                     if i <= prefix_length:
-                        row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
+                        row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self._get_activity_value(case_events.loc[i-1, self.activity_key])
                     else:
                         row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self.PADDING_CAT_VAL
 
-                    # Add dynamic attributes
-                    for attribute_name, attribute in self.log_attributes.items():
-                        if attribute['scope'] != 'event': continue
+                # Add event attributes
+                for attribute_name, attribute in self.log_attributes.items():
+                    if attribute['scope'] != 'event': continue
 
+                    for i in range(1, self.prefix_length+1):
                         if i <= prefix_length:
-                            row[f'{attribute_name}_{i}'] = case_events.loc[i-1, attribute_name]
+                            row[f'{attribute_name}_{i}'] = self._get_attribute_value(attribute_name, case_events.loc[i-1, attribute_name])
                         else:
                             if attribute['type'] == 'categorical':
                                 row[f'{attribute_name}_{i}'] = self.PADDING_CAT_VAL
@@ -112,33 +111,35 @@ class ComplexIndexEncoder(BaseEncoder):
 
         encoded_df = pd.DataFrame(rows)
 
-        # TODO: rivedere questa parte alla luce della nuova helper function one_hot !!!
-
-        # # Transform activities to one-hot if requested
-        # if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
-        #     encoded_df = pd.get_dummies(
-        #         encoded_df,
-        #         columns=[f'{self.EVENT_COL_PREFIX_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
-        #         drop_first=True,
-        #     )
-
-        # # Transform attributes to one-hot if requested
-        # if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
-        #     categorical_columns = []
+        # Transform to one-hot if requested
+        if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
+            categorical_columns = []
+            categorical_columns_possible_values = []
             
-        #     for static_attribute in static_attributes:
-        #         if is_object_dtype(encoded_df[static_attribute]):
-        #             categorical_columns.append(static_attribute)
+            # Activity columns
+            for i in range(1, self.prefix_length+1):
+                categorical_columns.append(f'{self.EVENT_COL_PREFIX_NAME}_{i}')
+                categorical_columns_possible_values.append(self.log_activities)
 
-        #     for dynamic_attribute in dynamic_attributes:
-        #         for i in range(1, min(self.prefix_length, max_prefix_length)+1):
-        #             if is_object_dtype(encoded_df[f'{dynamic_attribute}_{i}']):
-        #                 categorical_columns.append(f'{dynamic_attribute}_{i}')
+            # Categorical attributes columns
+            for attribute_name, attribute in self.log_attributes.items():
+                if attribute['type'] == 'categorical':
+                    if attribute['scope'] == 'event':
+                        for i in range(1, self.prefix_length+1):
+                            categorical_columns.append(f'{attribute_name}_{i}')
+                            categorical_columns_possible_values.append(attribute['values'])
+                    else:
+                        # For trace attributes do not consider PADDING value
+                        attribute_possible_values = [attribute_value for attribute_value in attribute['values'] if attribute_value != self.PADDING_CAT_VAL]
 
-        #     encoded_df = pd.get_dummies(
-        #         encoded_df,
-        #         columns=categorical_columns,
-        #         drop_first=True,
-        #     )
+                        categorical_columns.append(attribute_name)
+                        categorical_columns_possible_values.append(attribute_possible_values)
+
+            encoded_df = one_hot(
+                encoded_df,
+                columns=categorical_columns,
+                columns_possible_values=categorical_columns_possible_values,
+                unknown_value=self.UNKNOWN_VAL,
+            )
 
         return encoded_df
