@@ -112,10 +112,10 @@ class SimpleIndexEncoder(BaseEncoder):
 
             # Latest payload columns
             for attribute_name, attribute in self.log_attributes.items():
-                # For latest payload, do not consider PADDING value
-                attribute_possible_values = [attribute_value for attribute_value in attribute['values'] if attribute_value != self.PADDING_CAT_VAL]
-
                 if attribute['type'] == 'categorical':
+                    # For latest payload do not consider PADDING value
+                    attribute_possible_values = [attribute_value for attribute_value in attribute['values'] if attribute_value != self.PADDING_CAT_VAL]
+                    
                     categorical_columns.append(f'{attribute_name}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
                     categorical_columns_possible_values.append(attribute_possible_values)
 
