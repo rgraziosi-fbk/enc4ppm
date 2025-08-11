@@ -15,12 +15,6 @@ class BaseEncoder(ABC):
     UNKNOWN_VAL = 'UNKNOWN'
     PADDING_CAT_VAL = 'PADDING'
     PADDING_NUM_VAL = 0.0
-
-    is_frozen: bool = False
-
-    original_df: pd.DataFrame = pd.DataFrame()
-    log_activities: list[str] = []
-    log_attributes: dict[str, dict[str, str | list | dict]] = {}
     
     def __init__(
             self,
@@ -45,6 +39,12 @@ class BaseEncoder(ABC):
         self.activity_key = activity_key
         self.timestamp_key = timestamp_key
         self.outcome_key = outcome_key
+
+        # Instance variables
+        self.is_frozen: bool = False
+        self.original_df: pd.DataFrame = pd.DataFrame()
+        self.log_activities: list[str] = []
+        self.log_attributes: dict[str, dict[str, str | list | dict]] = {}
 
 
     @abstractmethod
@@ -145,17 +145,12 @@ class BaseEncoder(ABC):
         """
         # Set prefix length
         max_prefix_length_log = df.groupby(self.case_id_key).size().max().item()
-        
+
         if self.prefix_length is None:
             self.prefix_length = max_prefix_length_log
-        else:
-            if self.prefix_length > max_prefix_length_log:
-                print(f'Warning: provided prefix_length {self.prefix_length} is higher than maximum prefix length found in log {max_prefix_length_log}! Setting prefix_length to {max_prefix_length_log}.')
-
-            self.prefix_length = min(self.prefix_length, max_prefix_length_log)
 
         # Build activity vocab
-        self.log_activities = df[self.activity_key].unique().tolist() + [self.UNKNOWN_VAL]
+        self.log_activities = df[self.activity_key].unique().tolist() + [self.UNKNOWN_VAL] + [self.PADDING_CAT_VAL]
 
         # Build attribute vocabs
         if self.attributes == 'all':
@@ -179,7 +174,7 @@ class BaseEncoder(ABC):
                     'mean': attribute_values.mean().item(),
                 }
             else:
-                attribute_dict['values'] = attribute_values.tolist() + [self.UNKNOWN_VAL]
+                attribute_dict['values'] = attribute_values.tolist() + [self.UNKNOWN_VAL] + [self.PADDING_CAT_VAL]
                 
             self.log_attributes[attribute_name] =  attribute_dict
 

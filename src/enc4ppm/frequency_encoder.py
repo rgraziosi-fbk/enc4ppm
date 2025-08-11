@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas.api.types import is_object_dtype
 
 from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
@@ -109,10 +108,13 @@ class FrequencyEncoder(BaseEncoder):
             categorical_columns = []
             categorical_columns_possible_values = []
             
-            for attribute in self.attributes:
-                if is_object_dtype(encoded_df[f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}']):
-                    categorical_columns.append(f'{attribute}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
-                    categorical_columns_possible_values.append(self.log_attributes[attribute]['values'])
+            for attribute_name, attribute in self.log_attributes.items():
+                if attribute['type'] == 'categorical':
+                    # For latest payload, do not consider PADDING value
+                    attribute_possible_values = [attribute_value for attribute_value in attribute['values'] if attribute_value != self.PADDING_CAT_VAL]
+
+                    categorical_columns.append(f'{attribute_name}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
+                    categorical_columns_possible_values.append(attribute_possible_values)
 
             encoded_df = one_hot(
                 encoded_df,

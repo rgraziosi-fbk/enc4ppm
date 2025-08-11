@@ -2,10 +2,9 @@ import pandas as pd
 
 from .base_encoder import BaseEncoder
 from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
+from .helpers import one_hot
 
 class SimpleIndexEncoder(BaseEncoder):
-    
-
     def __init__(
         self,
         *,
@@ -75,7 +74,6 @@ class SimpleIndexEncoder(BaseEncoder):
 
     def _encode(self, df: pd.DataFrame) -> pd.DataFrame:
         grouped = df.groupby(self.case_id_key)
-        max_prefix_length = grouped.size().max()
 
         rows = []
 
@@ -89,9 +87,9 @@ class SimpleIndexEncoder(BaseEncoder):
                     self.ORIGINAL_INDEX_KEY: case_events.loc[prefix_length-1, 'index'],
                 }
 
-                for i in range(1, min(self.prefix_length, max_prefix_length)+1):
+                for i in range(1, self.prefix_length+1):
                     if i <= prefix_length:
-                        row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = case_events.loc[i-1, self.activity_key]
+                        row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self._get_activity_value(case_events.loc[i-1, self.activity_key])
                     else:
                         row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self.PADDING_CAT_VAL
                 
@@ -99,14 +97,33 @@ class SimpleIndexEncoder(BaseEncoder):
 
         encoded_df = pd.DataFrame(rows)
 
-        if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
-            encoded_df = pd.get_dummies(
-                encoded_df,
-                columns=[f'{self.EVENT_COL_PREFIX_NAME}_{i}' for i in range(1, min(self.prefix_length, max_prefix_length)+1)],
-                drop_first=True,
-            )
-
         if self.include_latest_payload:
             encoded_df = super()._include_latest_payload(encoded_df)
+
+        # Transform to one-hot if requested
+        if self.categorical_encoding == CategoricalEncoding.ONE_HOT:
+            categorical_columns = []
+            categorical_columns_possible_values = []
+            
+            # Activity columns
+            for i in range(1, self.prefix_length+1):
+                categorical_columns.append(f'{self.EVENT_COL_PREFIX_NAME}_{i}')
+                categorical_columns_possible_values.append(self.log_activities)
+
+            # Latest payload columns
+            for attribute_name, attribute in self.log_attributes.items():
+                # For latest payload, do not consider PADDING value
+                attribute_possible_values = [attribute_value for attribute_value in attribute['values'] if attribute_value != self.PADDING_CAT_VAL]
+
+                if attribute['type'] == 'categorical':
+                    categorical_columns.append(f'{attribute_name}_{self.LATEST_PAYLOAD_COL_SUFFIX_NAME}')
+                    categorical_columns_possible_values.append(attribute_possible_values)
+
+            encoded_df = one_hot(
+                encoded_df,
+                columns=categorical_columns,
+                columns_possible_values=categorical_columns_possible_values,
+                unknown_value=self.UNKNOWN_VAL,
+            )
 
         return encoded_df
