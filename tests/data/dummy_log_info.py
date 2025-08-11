@@ -1,4 +1,4 @@
-TEST_LOG_NAME = 'test_log.csv'
+TEST_LOG_NAME = 'dummy_log.csv'
 
 TIMESTAMP_FORMAT = '%d/%m/%Y %H:%M'
 
@@ -7,5 +7,7 @@ ACTIVITY_KEY = 'Activity'
 TIMESTAMP_KEY = 'Timestamp'
 
 UNKNOWN_VAL = 'UNKNOWN'
+PADDING_CAT_VAL = 'PADDING'
+PADDING_NUM_VAL = 0.0
 
 NUM_ACTIVITIES = 6

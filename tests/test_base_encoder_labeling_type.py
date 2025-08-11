@@ -4,7 +4,7 @@ import pandas as pd
 
 from src.enc4ppm.frequency_encoder import FrequencyEncoder
 from src.enc4ppm.constants import LabelingType
-from tests.data.test_log_info import *
+from tests.data.dummy_log_info import *
 
 @pytest.fixture
 def log():
