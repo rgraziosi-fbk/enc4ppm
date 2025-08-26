@@ -4,7 +4,7 @@ import pandas as pd
 
 from src.enc4ppm.frequency_encoder import FrequencyEncoder
 from src.enc4ppm.constants import LabelingType, CategoricalEncoding, PrefixStrategy
-from tests.data.test_log_info import *
+from tests.data.dummy_log_info import *
 
 @pytest.fixture
 def log():
@@ -18,6 +18,7 @@ def gt_encoded_log_prefix_length_up_to_2():
         # Case001
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -28,6 +29,7 @@ def gt_encoded_log_prefix_length_up_to_2():
         },
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -39,6 +41,7 @@ def gt_encoded_log_prefix_length_up_to_2():
         # Case002
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -49,6 +52,7 @@ def gt_encoded_log_prefix_length_up_to_2():
         },
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -60,6 +64,7 @@ def gt_encoded_log_prefix_length_up_to_2():
         # Case003
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -70,6 +75,30 @@ def gt_encoded_log_prefix_length_up_to_2():
         },
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Receive Payment',
+        },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 0,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Ship',
+        },
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -87,6 +116,7 @@ def gt_encoded_log_prefix_length_only_2():
         # Case001
         {
             CASE_ID_KEY: 'Case001',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -98,6 +128,7 @@ def gt_encoded_log_prefix_length_only_2():
         # Case002
         {
             CASE_ID_KEY: 'Case002',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 0,
             'Receive Payment': 0,
@@ -109,6 +140,19 @@ def gt_encoded_log_prefix_length_only_2():
         # Case003
         {
             CASE_ID_KEY: 'Case003',
+            UNKNOWN_VAL: 0,
+            'Receive Order': 1,
+            'Ship': 1,
+            'Receive Payment': 0,
+            'Contact Supplier': 0,
+            'Order Returned': 0,
+            'Issue Refund': 0,
+            'label': 'Receive Payment',
+        },
+        # Case004
+        {
+            CASE_ID_KEY: 'Case004',
+            UNKNOWN_VAL: 0,
             'Receive Order': 1,
             'Ship': 1,
             'Receive Payment': 0,
@@ -133,7 +177,7 @@ def test_prefix_length_up_to_2(log, gt_encoded_log_prefix_length_up_to_2):
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_prefix_length_up_to_2) == len(encoded_log)
-    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 # + 1 is case id, + 1 is label
+    assert len(gt_encoded_log_prefix_length_up_to_2[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_prefix_length_up_to_2)):
@@ -153,7 +197,7 @@ def test_frequency_encoder_prefix_length_only_2(log, gt_encoded_log_prefix_lengt
     encoded_log = frequency_encoder.encode(log)
 
     assert len(gt_encoded_log_prefix_length_only_2) == len(encoded_log)
-    assert len(encoded_log.columns) == NUM_ACTIVITIES + 1 + 1 # + 1 is case id, + 1 is label
+    assert len(gt_encoded_log_prefix_length_only_2[0]) == len(encoded_log.columns)
 
     encoded_log = encoded_log.to_dict(orient='records')
     for i in range(len(gt_encoded_log_prefix_length_only_2)):
