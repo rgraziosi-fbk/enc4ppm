@@ -17,18 +17,18 @@ class BaseEncoder(ABC):
     PADDING_NUM_VAL = 0.0
     
     def __init__(
-            self,
-            labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
-            attributes: list[str] | str = [],
-            categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
-            prefix_length: int = None,
-            prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
-            timestamp_format: str = None,
-            case_id_key: str = 'case:concept:name',
-            activity_key: str = 'concept:name',
-            timestamp_key: str = 'time:timestamp',
-            outcome_key: str = 'outcome',
-        ) -> None:
+        self,
+        labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
+        attributes: list[str] | str = [],
+        categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
+        prefix_length: int = None,
+        prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
+        timestamp_format: str = None,
+        case_id_key: str = 'case:concept:name',
+        activity_key: str = 'concept:name',
+        timestamp_key: str = 'time:timestamp',
+        outcome_key: str = 'outcome',
+    ) -> None:
         self.labeling_type = labeling_type
         self.attributes = attributes
         self.categorical_encoding = categorical_encoding
