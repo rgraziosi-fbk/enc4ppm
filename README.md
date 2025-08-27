@@ -5,7 +5,7 @@ Encode data for predictive process monitoring
 ## Installation
 
 ```bash
-pip install .
+pip install enc4ppm
 ```
 
 ## Usage
