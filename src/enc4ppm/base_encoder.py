@@ -184,7 +184,7 @@ class BaseEncoder(ABC):
         Common preprocessing logic shared by all encoders.
         """
         # Cast timestamp column to datetime
-        df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
+        df.loc[:, self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
 
         return df
 
