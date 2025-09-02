@@ -66,14 +66,13 @@ class BaseEncoder(ABC):
         
         self._check_log(df)
         self._check_parameters(df)
+        df = self._preprocess_log(df)
         
         if not self.is_frozen:
             self._extract_log_data(df)
 
         if 'freeze' in kwargs and kwargs['freeze']:
             self.is_frozen = True
-        
-        df = self._preprocess_log(df)
 
         encoded_df = self._encode(df)
 
@@ -139,6 +138,27 @@ class BaseEncoder(ABC):
             raise TypeError(f'prefix_strategy must be a valid PrefixStrategy: {[e.name for e in PrefixStrategy]}')
 
 
+    def _preprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Common preprocessing logic shared by all encoders.
+        """
+        # Cast timestamp column to datetime
+        df.loc[:, self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
+
+        # Change null values to UNKNOWN_VAL or 0, based on their type
+        fill_dict = {}
+
+        for col in df.select_dtypes(include=['object', 'category']).columns:
+            fill_dict[col] = self.UNKNOWN_VAL
+
+        for col in df.select_dtypes(include=['number']).columns:
+            fill_dict[col] = 0
+
+        df = df.fillna(fill_dict)
+
+        return df
+
+
     def _extract_log_data(self, df: pd.DataFrame) -> None:
         """
         From log data, create necessary variables for later use (e.g: determines prefix length, build activity and attribute vocabs, etc.)
@@ -154,13 +174,13 @@ class BaseEncoder(ABC):
 
         # Build attribute vocabs
         if self.attributes == 'all':
-            self.attributes = [a for a in self.original_df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
+            self.attributes = [a for a in df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
             
         for attribute_name in self.attributes:
-            attribute_values = self.original_df[attribute_name].unique()
+            attribute_values = df[attribute_name].unique()
 
             is_numeric = is_numeric_dtype(attribute_values)
-            is_static = self.original_df.groupby(self.case_id_key)[attribute_name].nunique().eq(1).all()
+            is_static = df.groupby(self.case_id_key)[attribute_name].nunique().eq(1).all()
 
             attribute_dict = {
                 'type': 'numerical' if is_numeric else 'categorical',
@@ -174,19 +194,10 @@ class BaseEncoder(ABC):
                     'mean': attribute_values.mean().item(),
                 }
             else:
+                attribute_values = attribute_values[attribute_values != self.UNKNOWN_VAL] # remove UNKNOWN_VAL if present, because it'll be added anyway
                 attribute_dict['values'] = attribute_values.tolist() + [self.UNKNOWN_VAL] + [self.PADDING_CAT_VAL]
                 
-            self.log_attributes[attribute_name] =  attribute_dict
-
-    
-    def _preprocess_log(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Common preprocessing logic shared by all encoders.
-        """
-        # Cast timestamp column to datetime
-        df.loc[:, self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
-
-        return df
+            self.log_attributes[attribute_name] = attribute_dict
 
     
     def _label_log(self, df: pd.DataFrame) -> pd.DataFrame:
