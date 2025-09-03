@@ -266,7 +266,8 @@ class BaseEncoder(ABC):
 
         # Drop unnecessary data
         df = df.drop(columns=[self.timestamp_key, self.ORIGINAL_INDEX_KEY])
-        df = df.dropna(subset=[self.LABEL_KEY]).reset_index(drop=True)
+        if self.labeling_type != LabelingType.NONE:
+            df = df.dropna(subset=[self.LABEL_KEY]).reset_index(drop=True)
 
         return df
 
