@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enc4ppm"
-version = "0.1.2"
+version = "0.1.3"
 description = "Encode logs for predictive process monitoring"
 authors = [
     { name = "Riccardo Graziosi", email = "riccardo.graziosi97@gmail.com" }
