@@ -142,11 +142,13 @@ class BaseEncoder(ABC):
         """
         Common preprocessing logic shared by all encoders.
         """
+        df = df.copy()
+        
         # Cast case id column to string
-        df.loc[:, self.case_id_key] = df[self.case_id_key].astype(str)
+        df[self.case_id_key] = df[self.case_id_key].astype(str)
 
         # Cast timestamp column to datetime
-        df.loc[:, self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
+        df[self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
 
         # Change null values to UNKNOWN_VAL or 0, based on their type
         fill_dict = {}
@@ -157,7 +159,7 @@ class BaseEncoder(ABC):
         for col in df.select_dtypes(include=['number']).columns:
             fill_dict[col] = 0
 
-        df = df.fillna(fill_dict)
+        df = df.fillna(fill_dict).infer_objects(copy=False)
 
         return df
 
