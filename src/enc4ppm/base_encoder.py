@@ -142,6 +142,9 @@ class BaseEncoder(ABC):
         """
         Common preprocessing logic shared by all encoders.
         """
+        # Cast case id column to string
+        df.loc[:, self.case_id_key] = df[self.case_id_key].astype(str)
+
         # Cast timestamp column to datetime
         df.loc[:, self.timestamp_key] = pd.to_datetime(df[self.timestamp_key], format=self.timestamp_format)
 
