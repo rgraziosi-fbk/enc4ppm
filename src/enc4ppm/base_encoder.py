@@ -9,6 +9,8 @@ from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
 
 class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
+    TIME_SINCE_CS_KEY = 'TimeSinceCaseStart'
+    TIME_SINCE_PE_KEY = 'TimeSincePreviousEvent'
     EVENT_COL_PREFIX_NAME = 'event'
     LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
     LABEL_KEY = 'label'
@@ -23,6 +25,7 @@ class BaseEncoder(ABC):
         categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
         prefix_length: int = None,
         prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
+        add_time_features: bool = False,
         timestamp_format: str = None,
         case_id_key: str = 'case:concept:name',
         activity_key: str = 'concept:name',
@@ -34,6 +37,7 @@ class BaseEncoder(ABC):
         self.categorical_encoding = categorical_encoding
         self.prefix_length = prefix_length
         self.prefix_strategy = prefix_strategy
+        self.add_time_features = add_time_features
         self.timestamp_format = timestamp_format
         self.case_id_key = case_id_key
         self.activity_key = activity_key
@@ -76,9 +80,7 @@ class BaseEncoder(ABC):
 
         encoded_df = self._encode(df)
 
-        if self.ORIGINAL_INDEX_KEY not in encoded_df.columns:
-            raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column when implementing your own custom encoder!')
-
+        encoded_df = self._after_encode(encoded_df)
         encoded_df = self._label_log(encoded_df)
         encoded_df = self._apply_prefix_strategy(encoded_df)
         encoded_df = self._postprocess_log(encoded_df)
@@ -205,16 +207,36 @@ class BaseEncoder(ABC):
             self.log_attributes[attribute_name] = attribute_dict
 
     
-    def _label_log(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _after_encode(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Common logic shared by all encoders. The method labels the provided log with the provided LabelingType.
+        Common logic to execute right after encoding.
         """
+        # Check whether OriginalIndex is present
         if self.ORIGINAL_INDEX_KEY not in df.columns:
-            raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column into df before calling _label_log')
+            raise ValueError(f'You must include {self.ORIGINAL_INDEX_KEY} column when implementing your own custom encoder!')
         
         # Sort by case and timestamp
         df = df.sort_values([self.case_id_key, self.timestamp_key], ascending=[True, True]).reset_index(drop=True)
 
+        # If requested, add columns TimeSinceCaseStart and TimeSincePreviousEvent to dataframe
+        if self.add_time_features:
+            first_timestamp_per_case = df.groupby(self.case_id_key)[self.timestamp_key].transform('min')
+
+            df[self.TIME_SINCE_CS_KEY] = (df[self.timestamp_key] - first_timestamp_per_case).dt.total_seconds()
+            df[self.TIME_SINCE_PE_KEY] = df.groupby(self.case_id_key)[self.timestamp_key].diff().dt.total_seconds()
+            df[self.TIME_SINCE_PE_KEY] = df[self.TIME_SINCE_PE_KEY].fillna(0)
+
+            # standardize
+            df[self.TIME_SINCE_CS_KEY] = (df[self.TIME_SINCE_CS_KEY] - df[self.TIME_SINCE_CS_KEY].mean()) / df[self.TIME_SINCE_CS_KEY].std(ddof=0)
+            df[self.TIME_SINCE_PE_KEY] = (df[self.TIME_SINCE_PE_KEY] - df[self.TIME_SINCE_PE_KEY].mean()) / df[self.TIME_SINCE_PE_KEY].std(ddof=0)
+
+        return df
+
+    
+    def _label_log(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Common logic shared by all encoders. The method labels the provided log with the provided LabelingType.
+        """
         if self.labeling_type == LabelingType.NEXT_ACTIVITY:
             # Get the next ORIGINAL_INDEX_KEY per case
             df['next_index'] = df.groupby(self.case_id_key)[self.ORIGINAL_INDEX_KEY].shift(-1)
