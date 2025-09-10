@@ -15,6 +15,7 @@ class FrequencyEncoder(BaseEncoder):
         categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
         prefix_length: int = None,
         prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
+        add_time_features: bool = False,
         timestamp_format: str = None,
         case_id_key: str = 'case:concept:name',
         activity_key: str = 'concept:name',
@@ -31,6 +32,7 @@ class FrequencyEncoder(BaseEncoder):
             categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
             prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.
             prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).
+            add_time_features: Whether to add time features (time since case start and time since last event) to the encoding.
             timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.
             case_id_key: Column name for case identifiers.
             activity_key: Column name for activity names.
@@ -43,6 +45,7 @@ class FrequencyEncoder(BaseEncoder):
             categorical_encoding,
             prefix_length,
             prefix_strategy,
+            add_time_features,
             timestamp_format,
             case_id_key,
             activity_key,
