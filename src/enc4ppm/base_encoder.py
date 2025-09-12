@@ -206,6 +206,10 @@ class BaseEncoder(ABC):
                 
             self.log_attributes[attribute_name] = attribute_dict
 
+        # Build outcome vocab
+        if self.labeling_type == LabelingType.OUTCOME:
+            self.log_outcomes = df[self.outcome_key].unique().tolist()
+
     
     def _after_encode(self, df: pd.DataFrame) -> pd.DataFrame:
         """
