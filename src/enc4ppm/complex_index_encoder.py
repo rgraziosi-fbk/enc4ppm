@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .base_encoder import BaseEncoder
-from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
+from .constants import LabelingType, CategoricalEncoding, NumericalScaling, PrefixStrategy
 from .helpers import one_hot
 
 class ComplexIndexEncoder(BaseEncoder):
@@ -11,6 +11,7 @@ class ComplexIndexEncoder(BaseEncoder):
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
         attributes: list[str] | str = [],
         categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
+        numerical_scaling: NumericalScaling = NumericalScaling.NONE,
         prefix_length: int = None,
         prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
         add_time_features: bool = False,
@@ -26,7 +27,8 @@ class ComplexIndexEncoder(BaseEncoder):
         Args:
             labeling_type: Label type to apply to examples.
             attributes: Which attributes to consider. Can be a list of the attributes to consider or the string 'all' (all attributes found in the log will be encoded).
-            categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
+            categorical_encoding: How to encode categorical features. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
+            numerical_scaling: How to scale numerical features. They can be standardized (NumericalScaling.STANDARDIZATION) or left as-is (NumericalScaling.NONE).
             prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.
             prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).
             add_time_features: Whether to add time features (time since case start and time since last event) to the encoding.
@@ -40,6 +42,7 @@ class ComplexIndexEncoder(BaseEncoder):
             labeling_type,
             attributes,
             categorical_encoding,
+            numerical_scaling,
             prefix_length,
             prefix_strategy,
             add_time_features,

@@ -13,6 +13,11 @@ class CategoricalEncoding(Enum):
     ONE_HOT = 'one_hot'
 
 
+class NumericalScaling(Enum):
+    NONE = 'none'
+    STANDARDIZATION = 'standardization'
+
+
 class PrefixStrategy(Enum):
     UP_TO_SPECIFIED = 'up_to_specified'
     ONLY_SPECIFIED = 'only_specified'

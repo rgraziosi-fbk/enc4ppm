@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-from .constants import LabelingType, CategoricalEncoding, PrefixStrategy
+from .constants import LabelingType, CategoricalEncoding, NumericalScaling, PrefixStrategy
 
 class BaseEncoder(ABC):
     ORIGINAL_INDEX_KEY = 'OriginalIndex'
@@ -23,6 +23,7 @@ class BaseEncoder(ABC):
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
         attributes: list[str] | str = [],
         categorical_encoding: CategoricalEncoding = CategoricalEncoding.STRING,
+        numerical_scaling: NumericalScaling = NumericalScaling.NONE,
         prefix_length: int = None,
         prefix_strategy: PrefixStrategy = PrefixStrategy.UP_TO_SPECIFIED,
         add_time_features: bool = False,
@@ -35,6 +36,7 @@ class BaseEncoder(ABC):
         self.labeling_type = labeling_type
         self.attributes = attributes
         self.categorical_encoding = categorical_encoding
+        self.numerical_scaling = numerical_scaling
         self.prefix_length = prefix_length
         self.prefix_strategy = prefix_strategy
         self.add_time_features = add_time_features
@@ -46,9 +48,11 @@ class BaseEncoder(ABC):
 
         # Instance variables
         self.is_frozen: bool = False
+        self.was_frozen: bool = False
         self.original_df: pd.DataFrame = pd.DataFrame()
         self.log_activities: list[str] = []
         self.log_attributes: dict[str, dict[str, str | list | dict]] = {}
+        self.numerical_scaling_info = {}
 
 
     @abstractmethod
@@ -67,6 +71,7 @@ class BaseEncoder(ABC):
         In particular, common operations are: _preprocess_log, _label_log, _apply_prefix_strategy and _postprocess_log; specific encoding is performed by the _encode method.
         """
         self.original_df = df
+        self.was_frozen = self.is_frozen
         
         self._check_log(df)
         self._check_parameters(df)
@@ -179,6 +184,10 @@ class BaseEncoder(ABC):
         # Build activity vocab
         self.log_activities = df[self.activity_key].unique().tolist() + [self.UNKNOWN_VAL] + [self.PADDING_CAT_VAL]
 
+        # Build outcome vocab
+        if self.labeling_type == LabelingType.OUTCOME:
+            self.log_outcomes = df[self.outcome_key].unique().tolist()
+
         # Build attribute vocabs
         if self.attributes == 'all':
             self.attributes = [a for a in df.columns.tolist() if a not in [self.case_id_key, self.activity_key, self.timestamp_key]]
@@ -199,16 +208,13 @@ class BaseEncoder(ABC):
                     'min': attribute_values.min().item(),
                     'max': attribute_values.max().item(),
                     'mean': attribute_values.mean().item(),
+                    'std': attribute_values.std().item() if len(attribute_values) > 1 else 0.0,
                 }
             else:
                 attribute_values = attribute_values[attribute_values != self.UNKNOWN_VAL] # remove UNKNOWN_VAL if present, because it'll be added anyway
                 attribute_dict['values'] = attribute_values.tolist() + [self.UNKNOWN_VAL] + [self.PADDING_CAT_VAL]
                 
             self.log_attributes[attribute_name] = attribute_dict
-
-        # Build outcome vocab
-        if self.labeling_type == LabelingType.OUTCOME:
-            self.log_outcomes = df[self.outcome_key].unique().tolist()
 
     
     def _after_encode(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -229,10 +235,6 @@ class BaseEncoder(ABC):
             df[self.TIME_SINCE_CS_KEY] = (df[self.timestamp_key] - first_timestamp_per_case).dt.total_seconds()
             df[self.TIME_SINCE_PE_KEY] = df.groupby(self.case_id_key)[self.timestamp_key].diff().dt.total_seconds()
             df[self.TIME_SINCE_PE_KEY] = df[self.TIME_SINCE_PE_KEY].fillna(0)
-
-            # standardize
-            df[self.TIME_SINCE_CS_KEY] = (df[self.TIME_SINCE_CS_KEY] - df[self.TIME_SINCE_CS_KEY].mean()) / df[self.TIME_SINCE_CS_KEY].std(ddof=0)
-            df[self.TIME_SINCE_PE_KEY] = (df[self.TIME_SINCE_PE_KEY] - df[self.TIME_SINCE_PE_KEY].mean()) / df[self.TIME_SINCE_PE_KEY].std(ddof=0)
 
         return df
 
@@ -259,6 +261,13 @@ class BaseEncoder(ABC):
 
             # Compute remaining time in hours
             df[self.LABEL_KEY] = (last_timestamp_per_case - df[self.timestamp_key]).dt.total_seconds() / 60 / 60
+
+            # Save mean and std for later use
+            if not self.was_frozen:
+                self.numerical_scaling_info[self.LABEL_KEY] = {
+                    'mean': df[self.LABEL_KEY].mean(),
+                    'std': df[self.LABEL_KEY].std(ddof=0),
+                }
 
         elif self.labeling_type == LabelingType.OUTCOME:
             # Get outcome for each case (from original_df)
@@ -292,6 +301,35 @@ class BaseEncoder(ABC):
         """
         Common postprocessing logic shared by all encoders. The method restores original ordering and drops unnecessary data.
         """
+        if self.add_time_features and not self.was_frozen:
+            self.numerical_scaling_info[self.TIME_SINCE_CS_KEY] = {
+                'mean': df[self.TIME_SINCE_CS_KEY].mean(),
+                'std': df[self.TIME_SINCE_CS_KEY].std(ddof=0),
+            }
+            self.numerical_scaling_info[self.TIME_SINCE_PE_KEY] = {
+                'mean': df[self.TIME_SINCE_PE_KEY].mean(),
+                'std': df[self.TIME_SINCE_PE_KEY].std(ddof=0),
+            }
+
+        # Scale time features
+        if self.add_time_features:
+            if self.numerical_scaling == NumericalScaling.STANDARDIZATION:
+                df[self.TIME_SINCE_CS_KEY] = (df[self.TIME_SINCE_CS_KEY] - self.numerical_scaling_info[self.TIME_SINCE_CS_KEY]['mean']) / self.numerical_scaling_info[self.TIME_SINCE_CS_KEY]['std']
+                df[self.TIME_SINCE_PE_KEY] = (df[self.TIME_SINCE_PE_KEY] - self.numerical_scaling_info[self.TIME_SINCE_PE_KEY]['mean']) / self.numerical_scaling_info[self.TIME_SINCE_PE_KEY]['std']
+
+        # Scale label if it is remaining time
+        if self.labeling_type == LabelingType.REMAINING_TIME:
+            if self.numerical_scaling == NumericalScaling.STANDARDIZATION:
+                df[self.LABEL_KEY] = (df[self.LABEL_KEY] - self.numerical_scaling_info[self.LABEL_KEY]['mean']) / self.numerical_scaling_info[self.LABEL_KEY]['std']
+
+        # Scale numerical attributes
+        for attribute_name, attribute_info in self.log_attributes.items():
+            if attribute_info['type'] == 'numerical':
+                if self.numerical_scaling == NumericalScaling.STANDARDIZATION:
+                    for col in df.columns:
+                        if attribute_name in col:
+                            df[col] = (df[col] - self.log_attributes[attribute_name]['values']['mean']) / self.log_attributes[attribute_name]['values']['std']
+
         # Restore original ordering
         df = df.sort_values(by=self.ORIGINAL_INDEX_KEY).reset_index(drop=True)
 
@@ -367,6 +405,7 @@ class BaseEncoder(ABC):
         print(f" - Encoder Type: {self.__class__.__name__}")
         print(f" - Labeling Type: {self.labeling_type}")
         print(f" - Categorical Encoding: {self.categorical_encoding}")
+        print(f" - Numerical Scaling Info: {self.numerical_scaling_info}")
         print(f" - Prefix Length: {self.prefix_length}")
         print(f" - Prefix Strategy: {self.prefix_strategy}")
         print(f" - Timestamp Format: {self.timestamp_format}")
@@ -416,3 +455,20 @@ class BaseEncoder(ABC):
             raise TypeError(f"Loaded object is not an instance of {cls.__name__}")
         
         return encoder
+
+
+    def unscale_numerical_feature(self, df: pd.DataFrame | pd.Series, feature_name: str) -> pd.DataFrame | pd.Series:
+        if self.numerical_scaling_info is None or feature_name not in self.numerical_scaling_info:
+            raise ValueError(f'Feature {feature_name} has no scaling info available. Available scaling info: {self.numerical_scaling_info}')
+        
+        df = df.copy()
+        
+        if isinstance(df, pd.Series):
+            return df * self.numerical_scaling_info[feature_name]['std'] + self.numerical_scaling_info[feature_name]['mean']
+        elif isinstance(df, pd.DataFrame):
+            if feature_name not in df.columns:
+                raise ValueError(f'Feature {feature_name} not found in provided DataFrame. Available columns: {df.columns.tolist()}')
+            
+            df[feature_name] = df[feature_name] * self.numerical_scaling_info[feature_name]['std'] + self.numerical_scaling_info[feature_name]['mean']
+
+        return df
