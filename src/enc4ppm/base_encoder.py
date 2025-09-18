@@ -12,6 +12,7 @@ class BaseEncoder(ABC):
     TIME_SINCE_CS_KEY = 'TimeSinceCaseStart'
     TIME_SINCE_PE_KEY = 'TimeSincePreviousEvent'
     EVENT_COL_PREFIX_NAME = 'event'
+    TIMESTAMP_COL_PREFIX_NAME = 'Timestamp'
     LATEST_PAYLOAD_COL_SUFFIX_NAME = 'latest'
     LABEL_KEY = 'label'
     UNKNOWN_VAL = 'UNKNOWN'

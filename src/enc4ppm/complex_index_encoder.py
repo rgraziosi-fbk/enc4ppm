@@ -7,6 +7,7 @@ from .helpers import one_hot
 class ComplexIndexEncoder(BaseEncoder):
     def __init__(
         self,
+        include_timestamps: bool = False,
         *,
         labeling_type: LabelingType = LabelingType.NEXT_ACTIVITY,
         attributes: list[str] | str = [],
@@ -25,6 +26,7 @@ class ComplexIndexEncoder(BaseEncoder):
         Initialize the ComplexIndexEncoder.
 
         Args:
+            include_timestamps: Whether to add Timestamp columns or not.
             labeling_type: Label type to apply to examples.
             attributes: Which attributes to consider. Can be a list of the attributes to consider or the string 'all' (all attributes found in the log will be encoded).
             categorical_encoding: How to encode categorical features. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).
@@ -52,6 +54,8 @@ class ComplexIndexEncoder(BaseEncoder):
             timestamp_key,
             outcome_key,
         )
+
+        self.include_timestamps = include_timestamps
 
 
     def encode(
@@ -99,6 +103,14 @@ class ComplexIndexEncoder(BaseEncoder):
                         row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self._get_activity_value(case_events.loc[i-1, self.activity_key])
                     else:
                         row[f'{self.EVENT_COL_PREFIX_NAME}_{i}'] = self.PADDING_CAT_VAL
+
+                # Add timestamps
+                if self.include_timestamps:
+                    for i in range(1, self.prefix_length+1):
+                        if i <= prefix_length:
+                            row[f'{self.TIMESTAMP_COL_PREFIX_NAME}_{i}'] = case_events.loc[i-1, self.timestamp_key]
+                        else:
+                            row[f'{self.TIMESTAMP_COL_PREFIX_NAME}_{i}'] = pd.NaT
 
                 # Add event attributes
                 for attribute_name, attribute in self.log_attributes.items():
