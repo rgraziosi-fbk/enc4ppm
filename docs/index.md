@@ -6,7 +6,9 @@
 
 Using pip:
 
-`pip install enc4ppm`
+```bash
+pip install enc4ppm
+```
 
 ## Example
 
