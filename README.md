@@ -1,18 +1,35 @@
-# enc4ppm
+# Encoding For Predictive Process Monitoring (enc4ppm)
 
-Encode data for predictive process monitoring
+`enc4ppm` is a Python package than provides common process mining encodings.
 
 ## Installation
 
-```bash
-pip install enc4ppm
-```
+Using pip:
 
-## Usage
+`pip install enc4ppm`
+
+## Example
+
+The following example performs frequency encoding with latest payload for next activity prediction task:
 
 ```python
-import enc4ppm
-# ...
+import pandas as pd
+
+from enc4ppm.frequency_encoder import FrequencyEncoder
+from enc4ppm.constants import LabelingType
+
+# Load log
+log = pd.read_csv('bpic2012.csv')
+
+# Create encoder
+encoder = FrequencyEncoder(
+    labeling_type=LabelingType.NEXT_ACTIVITY,
+    include_latest_payload=True,
+    attributes=['AMOUNT_REQ'],
+)
+
+# Encode log
+encoded_log = encoder.encode(log)
 ```
 
 ## Development
