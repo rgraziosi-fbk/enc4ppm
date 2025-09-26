@@ -4,7 +4,7 @@
 
 [Documentation and reference](https://rgraziosi-fbk.github.io/enc4ppm/).
 
-Features:
+## Features
 
 - Frequency, simple-index and complex-index encodings
 - Next activity, remaining time and outcome labelings
