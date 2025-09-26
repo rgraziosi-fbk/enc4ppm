@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#enc4ppm-encoding-for-predictive-process-monitoring" class="md-skip">
+        <a href="#encoding-for-predictive-process-monitoring-enc4ppm" class="md-skip">
           Skip to content
         </a>
       
@@ -231,6 +231,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="." class="md-nav__link md-nav__link--active">
         
   
@@ -242,6 +255,43 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -353,6 +403,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/complex_index_encoder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    complex_index_encoder
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -380,6 +453,32 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -397,8 +496,31 @@
   
 
 
-<h1 id="enc4ppm-encoding-for-predictive-process-monitoring">enc4ppm (Encoding For Predictive Process Monitoring)</h1>
-<p>Welcome to the documentation for <code>enc4ppm</code>.</p>
+<h1 id="encoding-for-predictive-process-monitoring-enc4ppm">Encoding For Predictive Process Monitoring (enc4ppm)</h1>
+<p><code>enc4ppm</code> is a Python package than provides common process mining encodings.</p>
+<h2 id="installation">Installation</h2>
+<p>Using pip:</p>
+<p><code>pip install enc4ppm</code></p>
+<h2 id="example">Example</h2>
+<p>The following example performs frequency encoding with latest payload for next activity prediction task:</p>
+<pre><code class="language-python">import pandas as pd
+
+from enc4ppm.frequency_encoder import FrequencyEncoder
+from enc4ppm.constants import LabelingType
+
+# Load log
+log = pd.read_csv('bpic2012.csv')
+
+# Create encoder
+encoder = FrequencyEncoder(
+    labeling_type=LabelingType.NEXT_ACTIVITY,
+    include_latest_payload=True,
+    attributes=['AMOUNT_REQ'],
+)
+
+# Encode log
+encoded_log = encoder.encode(log)
+</code></pre>
 
 
 
