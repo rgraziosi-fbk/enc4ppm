@@ -2,6 +2,18 @@
 
 `enc4ppm` is a Python package than provides common process mining encodings.
 
+[Documentation and reference](https://rgraziosi-fbk.github.io/enc4ppm/).
+
+Features:
+
+- Frequency, simple-index and complex-index encodings
+- Next activity, remaining time and outcome labelings
+- Save encoder to disk for later use
+- Freeze encoder on training set, then use it on unseen data (automatic handling of unknown values)
+- Standardize numerical features
+- Convert categorical features to one-hot encoding, or keep them as strings
+- Add time features (time since case start and time since last event) to the encoding
+
 ## Installation
 
 Using pip:
