@@ -576,8 +576,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>src/enc4ppm/frequency_encoder.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  6</span>
-<span class="normal">  7</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  7</span>
 <span class="normal">  8</span>
 <span class="normal">  9</span>
 <span class="normal"> 10</span>
@@ -678,80 +677,107 @@
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
-<span class="normal">108</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FrequencyEncoder</span><span class="p">(</span><span class="n">BaseEncoder</span><span class="p">):</span>
-
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FrequencyEncoder</span><span class="p">(</span><span class="n">BaseEncoder</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+
         <span class="n">labeling_type</span><span class="p">:</span> <span class="n">LabelingType</span> <span class="o">=</span> <span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span>
+        <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">categorical_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+        <span class="n">numerical_scaling</span><span class="p">:</span> <span class="n">NumericalScaling</span> <span class="o">=</span> <span class="n">NumericalScaling</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span>
         <span class="n">prefix_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">prefix_strategy</span><span class="p">:</span> <span class="n">PrefixStrategy</span> <span class="o">=</span> <span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span>
+        <span class="n">add_time_features</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">case_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span>
         <span class="n">activity_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;concept:name&#39;</span><span class="p">,</span>
         <span class="n">timestamp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;time:timestamp&#39;</span><span class="p">,</span>
+        <span class="n">outcome_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;outcome&#39;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the FrequencyEncoder.</span>
 
 <span class="sd">        Args:</span>
+<span class="sd">            include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.</span>
 <span class="sd">            labeling_type: Label type to apply to examples.</span>
+<span class="sd">            attributes: Which attributes to consider. Can be a list of the attributes to consider or the string &#39;all&#39; (all attributes found in the log will be encoded).</span>
+<span class="sd">            categorical_encoding: How to encode categorical features. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</span>
+<span class="sd">            numerical_scaling: How to scale numerical features. They can be standardized (NumericalScaling.STANDARDIZATION) or left as-is (NumericalScaling.NONE).</span>
 <span class="sd">            prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.</span>
 <span class="sd">            prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).</span>
+<span class="sd">            add_time_features: Whether to add time features (time since case start and time since last event) to the encoding.</span>
 <span class="sd">            timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.</span>
 <span class="sd">            case_id_key: Column name for case identifiers.</span>
 <span class="sd">            activity_key: Column name for activity names.</span>
 <span class="sd">            timestamp_key: Column name for timestamps.</span>
+<span class="sd">            outcome_key: Column name for outcome predition.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">labeling_type</span><span class="p">,</span>
+            <span class="n">attributes</span><span class="p">,</span>
+            <span class="n">categorical_encoding</span><span class="p">,</span>
+            <span class="n">numerical_scaling</span><span class="p">,</span>
             <span class="n">prefix_length</span><span class="p">,</span>
             <span class="n">prefix_strategy</span><span class="p">,</span>
+            <span class="n">add_time_features</span><span class="p">,</span>
             <span class="n">timestamp_format</span><span class="p">,</span>
             <span class="n">case_id_key</span><span class="p">,</span>
             <span class="n">activity_key</span><span class="p">,</span>
             <span class="n">timestamp_key</span><span class="p">,</span>
+            <span class="n">outcome_key</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_latest_payload</span> <span class="o">=</span> <span class="n">include_latest_payload</span>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-        <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
-        <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">freeze</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Encode the provided DataFrame with frequency encoding and apply the specified labeling.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            df: DataFrame to encode.</span>
-<span class="sd">            include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.</span>
-<span class="sd">            attributes: Which attributes to consider. Can be either &#39;all&#39; (all trace and event attributes will be encoded) or a list of the attributes to consider.</span>
-<span class="sd">            categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</span>
+<span class="sd">            freeze: Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The encoded DataFrame.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_encode_template</span><span class="p">(</span>
-            <span class="n">df</span><span class="p">,</span>
-            <span class="n">include_latest_payload</span><span class="o">=</span><span class="n">include_latest_payload</span><span class="p">,</span>
-            <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
-            <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">categorical_attributes_encoding</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_encode_template</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">freeze</span><span class="o">=</span><span class="n">freeze</span><span class="p">)</span>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_encode</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-        <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-        <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">,</span>
-        <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_id_key</span><span class="p">)</span>
-        <span class="n">activities</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">activity_key</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-
+    <span class="k">def</span><span class="w"> </span><span class="nf">_encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">case_id_key</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">case_id</span><span class="p">,</span> <span class="n">case_events</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
             <span class="n">case_events</span> <span class="o">=</span> <span class="n">case_events</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timestamp_key</span><span class="p">)</span>
@@ -766,18 +792,38 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">ORIGINAL_INDEX_KEY</span><span class="p">:</span> <span class="n">prefix</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                 <span class="p">}</span>
 
-                <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">activities</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_activities</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
                     <span class="n">row</span><span class="p">[</span><span class="n">activity</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+                <span class="c1"># Handle unknown activities</span>
+                <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">UNKNOWN_VAL</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activity</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">activity</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">index</span> <span class="k">if</span> <span class="n">activity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_activities</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
                 <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="n">encoded_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">include_latest_payload</span><span class="p">:</span>
-            <span class="n">encoded_df</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_include_latest_payload</span><span class="p">(</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_latest_payload</span><span class="p">:</span>
+            <span class="n">encoded_df</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_include_latest_payload</span><span class="p">(</span><span class="n">encoded_df</span><span class="p">)</span>
+
+        <span class="c1"># Transform to one-hot if requested</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorical_encoding</span> <span class="o">==</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">ONE_HOT</span><span class="p">:</span>
+            <span class="n">categorical_columns</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">categorical_columns_possible_values</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_latest_payload</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attribute_name</span><span class="p">,</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;categorical&#39;</span><span class="p">:</span>
+                        <span class="c1"># For latest payload do not consider PADDING value</span>
+                        <span class="n">attribute_possible_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">attribute_value</span> <span class="k">for</span> <span class="n">attribute_value</span> <span class="ow">in</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">attribute_value</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PADDING_CAT_VAL</span><span class="p">]</span>
+
+                        <span class="n">categorical_columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">attribute_name</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">LATEST_PAYLOAD_COL_SUFFIX_NAME</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                        <span class="n">categorical_columns_possible_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attribute_possible_values</span><span class="p">)</span>
+
+            <span class="n">encoded_df</span> <span class="o">=</span> <span class="n">one_hot</span><span class="p">(</span>
                 <span class="n">encoded_df</span><span class="p">,</span>
-                <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
-                <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">categorical_attributes_encoding</span>
+                <span class="n">columns</span><span class="o">=</span><span class="n">categorical_columns</span><span class="p">,</span>
+                <span class="n">columns_possible_values</span><span class="o">=</span><span class="n">categorical_columns_possible_values</span><span class="p">,</span>
+                <span class="n">unknown_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">UNKNOWN_VAL</span><span class="p">,</span>
             <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">encoded_df</span>
@@ -800,7 +846,7 @@
 
 
 <h3 id="enc4ppm.frequency_encoder.FrequencyEncoder.__init__" class="doc doc-heading">
-            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">labeling_type</span><span class="o">=</span><span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span> <span class="n">prefix_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix_strategy</span><span class="o">=</span><span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span> <span class="n">timestamp_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">case_id_key</span><span class="o">=</span><span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span> <span class="n">activity_key</span><span class="o">=</span><span class="s1">&#39;concept:name&#39;</span><span class="p">,</span> <span class="n">timestamp_key</span><span class="o">=</span><span class="s1">&#39;time:timestamp&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">include_latest_payload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labeling_type</span><span class="o">=</span><span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="p">[],</span> <span class="n">categorical_encoding</span><span class="o">=</span><span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">numerical_scaling</span><span class="o">=</span><span class="n">NumericalScaling</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span> <span class="n">prefix_length</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix_strategy</span><span class="o">=</span><span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span> <span class="n">add_time_features</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timestamp_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">case_id_key</span><span class="o">=</span><span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span> <span class="n">activity_key</span><span class="o">=</span><span class="s1">&#39;concept:name&#39;</span><span class="p">,</span> <span class="n">timestamp_key</span><span class="o">=</span><span class="s1">&#39;time:timestamp&#39;</span><span class="p">,</span> <span class="n">outcome_key</span><span class="o">=</span><span class="s1">&#39;outcome&#39;</span><span class="p">)</span></code>
 
 </h3>
 
@@ -823,6 +869,22 @@
       <tbody>
           <tr class="doc-section-item">
             <td>
+                <code>include_latest_payload</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the <code>attributes</code> parameter.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
                 <code>labeling_type</code>
             </td>
             <td>
@@ -835,6 +897,54 @@
             </td>
             <td>
                   <code><span title="enc4ppm.constants.LabelingType.NEXT_ACTIVITY">NEXT_ACTIVITY</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>attributes</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>] | <span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which attributes to consider. Can be a list of the attributes to consider or the string 'all' (all attributes found in the log will be encoded).</p>
+              </div>
+            </td>
+            <td>
+                  <code>[]</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>categorical_encoding</code>
+            </td>
+            <td>
+                  <code><span title="enc4ppm.constants.CategoricalEncoding">CategoricalEncoding</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>How to encode categorical features. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="enc4ppm.constants.CategoricalEncoding.STRING">STRING</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>numerical_scaling</code>
+            </td>
+            <td>
+                  <code><span title="enc4ppm.constants.NumericalScaling">NumericalScaling</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>How to scale numerical features. They can be standardized (NumericalScaling.STANDARDIZATION) or left as-is (NumericalScaling.NONE).</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="enc4ppm.constants.NumericalScaling.NONE">NONE</span></code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -867,6 +977,22 @@
             </td>
             <td>
                   <code><span title="enc4ppm.constants.PrefixStrategy.UP_TO_SPECIFIED">UP_TO_SPECIFIED</span></code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>add_time_features</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to add time features (time since case start and time since last event) to the encoding.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -933,6 +1059,22 @@
                   <code>&#39;time:timestamp&#39;</code>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>outcome_key</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column name for outcome predition.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;outcome&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -970,38 +1112,78 @@
 <span class="normal">36</span>
 <span class="normal">37</span>
 <span class="normal">38</span>
-<span class="normal">39</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
+    <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+
     <span class="n">labeling_type</span><span class="p">:</span> <span class="n">LabelingType</span> <span class="o">=</span> <span class="n">LabelingType</span><span class="o">.</span><span class="n">NEXT_ACTIVITY</span><span class="p">,</span>
+    <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="n">categorical_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+    <span class="n">numerical_scaling</span><span class="p">:</span> <span class="n">NumericalScaling</span> <span class="o">=</span> <span class="n">NumericalScaling</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span>
     <span class="n">prefix_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">prefix_strategy</span><span class="p">:</span> <span class="n">PrefixStrategy</span> <span class="o">=</span> <span class="n">PrefixStrategy</span><span class="o">.</span><span class="n">UP_TO_SPECIFIED</span><span class="p">,</span>
+    <span class="n">add_time_features</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">timestamp_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">case_id_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;case:concept:name&#39;</span><span class="p">,</span>
     <span class="n">activity_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;concept:name&#39;</span><span class="p">,</span>
     <span class="n">timestamp_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;time:timestamp&#39;</span><span class="p">,</span>
+    <span class="n">outcome_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;outcome&#39;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize the FrequencyEncoder.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.</span>
 <span class="sd">        labeling_type: Label type to apply to examples.</span>
+<span class="sd">        attributes: Which attributes to consider. Can be a list of the attributes to consider or the string &#39;all&#39; (all attributes found in the log will be encoded).</span>
+<span class="sd">        categorical_encoding: How to encode categorical features. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</span>
+<span class="sd">        numerical_scaling: How to scale numerical features. They can be standardized (NumericalScaling.STANDARDIZATION) or left as-is (NumericalScaling.NONE).</span>
 <span class="sd">        prefix_length: Maximum prefix length to consider: longer prefixes will be discarded, shorter prefixes may be discarded depending on prefix_strategy parameter. If not provided, defaults to maximum prefix length found in log. If provided, it must be a non-zero positive int number.</span>
 <span class="sd">        prefix_strategy: Whether to consider prefix lengths from 1 to prefix_length (PrefixStrategy.UP_TO_SPECIFIED) or only the specified prefix_length (PrefixStrategy.ONLY_SPECIFIED).</span>
+<span class="sd">        add_time_features: Whether to add time features (time since case start and time since last event) to the encoding.</span>
 <span class="sd">        timestamp_format: Format of the timestamps in the log. If not provided, formatting will be inferred from the data.</span>
 <span class="sd">        case_id_key: Column name for case identifiers.</span>
 <span class="sd">        activity_key: Column name for activity names.</span>
 <span class="sd">        timestamp_key: Column name for timestamps.</span>
+<span class="sd">        outcome_key: Column name for outcome predition.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
         <span class="n">labeling_type</span><span class="p">,</span>
+        <span class="n">attributes</span><span class="p">,</span>
+        <span class="n">categorical_encoding</span><span class="p">,</span>
+        <span class="n">numerical_scaling</span><span class="p">,</span>
         <span class="n">prefix_length</span><span class="p">,</span>
         <span class="n">prefix_strategy</span><span class="p">,</span>
+        <span class="n">add_time_features</span><span class="p">,</span>
         <span class="n">timestamp_format</span><span class="p">,</span>
         <span class="n">case_id_key</span><span class="p">,</span>
         <span class="n">activity_key</span><span class="p">,</span>
         <span class="n">timestamp_key</span><span class="p">,</span>
+        <span class="n">outcome_key</span><span class="p">,</span>
     <span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">include_latest_payload</span> <span class="o">=</span> <span class="n">include_latest_payload</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -1012,7 +1194,7 @@
 
 
 <h3 id="enc4ppm.frequency_encoder.FrequencyEncoder.encode" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">encode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">include_latest_payload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">encode</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">freeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -1051,50 +1233,18 @@
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>include_latest_payload</code>
+                <code>freeze</code>
             </td>
             <td>
                   <code><span title="bool">bool</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the <code>attributes</code> parameter.</p>
+                <p>Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.</p>
               </div>
             </td>
             <td>
                   <code>False</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>attributes</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span> | <span title="list">list</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Which attributes to consider. Can be either 'all' (all trace and event attributes will be encoded) or a list of the attributes to consider.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;all&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>categorical_attributes_encoding</code>
-            </td>
-            <td>
-                  <code><span title="enc4ppm.constants.CategoricalEncoding">CategoricalEncoding</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</p>
-              </div>
-            </td>
-            <td>
-                  <code><span title="enc4ppm.constants.CategoricalEncoding.STRING">STRING</span></code>
             </td>
           </tr>
       </tbody>
@@ -1126,55 +1276,39 @@
 
             <details class="quote">
               <summary>Source code in <code>src/enc4ppm/frequency_encoder.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
-<span class="normal">50</span>
-<span class="normal">51</span>
-<span class="normal">52</span>
-<span class="normal">53</span>
-<span class="normal">54</span>
-<span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
-<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
-    <span class="n">include_latest_payload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">attributes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span>
-    <span class="n">categorical_attributes_encoding</span><span class="p">:</span> <span class="n">CategoricalEncoding</span> <span class="o">=</span> <span class="n">CategoricalEncoding</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">freeze</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Encode the provided DataFrame with frequency encoding and apply the specified labeling.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        df: DataFrame to encode.</span>
-<span class="sd">        include_latest_payload: Whether to include (True) or not (False) the latest values of trace and event attributes. The attributes to consider can be specified through the `attributes` parameter.</span>
-<span class="sd">        attributes: Which attributes to consider. Can be either &#39;all&#39; (all trace and event attributes will be encoded) or a list of the attributes to consider.</span>
-<span class="sd">        categorical_attributes_encoding: How to encode categorical attributes. They can either remain strings (CategoricalEncoding.STRING) or be converted to one-hot vectors splitted across multiple columns (CategoricalEncoding.ONE_HOT).</span>
+<span class="sd">        freeze: Freeze encoder with provided parameters. Usually set to True when encoding the train log, False otherwise. Required if you want to later save the encoder to a file.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The encoded DataFrame.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_encode_template</span><span class="p">(</span>
-        <span class="n">df</span><span class="p">,</span>
-        <span class="n">include_latest_payload</span><span class="o">=</span><span class="n">include_latest_payload</span><span class="p">,</span>
-        <span class="n">attributes</span><span class="o">=</span><span class="n">attributes</span><span class="p">,</span>
-        <span class="n">categorical_attributes_encoding</span><span class="o">=</span><span class="n">categorical_attributes_encoding</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_encode_template</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">freeze</span><span class="o">=</span><span class="n">freeze</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
