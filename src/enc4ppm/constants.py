@@ -3,6 +3,7 @@ from enum import Enum
 class LabelingType(Enum):
     NEXT_ACTIVITY = 'next_activity'
     REMAINING_TIME = 'remaining_time'
+    REMAINING_TIME_CLASSIFICATION = 'remaining_time_classification'
     OUTCOME = 'outcome'
     CUSTOM = 'custom'
     NONE = 'none'

@@ -54,6 +54,7 @@ class BaseEncoder(ABC):
         self.log_activities: list[str] = []
         self.log_attributes: dict[str, dict[str, str | list | dict]] = {}
         self.numerical_scaling_info = {}
+        self.remaining_time_num_bins = 10
 
 
     @abstractmethod
@@ -256,19 +257,45 @@ class BaseEncoder(ABC):
             # Drop the helper column
             df = df.drop(columns=['next_index'])
 
-        elif self.labeling_type == LabelingType.REMAINING_TIME:
+        elif self.labeling_type == LabelingType.REMAINING_TIME or self.labeling_type == LabelingType.REMAINING_TIME_CLASSIFICATION:
             # Get the last timestamp for each case
             last_timestamp_per_case = df.groupby(self.case_id_key)[self.timestamp_key].transform('max')
 
             # Compute remaining time in hours
             df[self.LABEL_KEY] = (last_timestamp_per_case - df[self.timestamp_key]).dt.total_seconds() / 60 / 60
 
-            # Save mean and std for later use
-            if not self.was_frozen:
-                self.numerical_scaling_info[self.LABEL_KEY] = {
-                    'mean': df[self.LABEL_KEY].mean(),
-                    'std': df[self.LABEL_KEY].std(ddof=0),
-                }
+            if self.labeling_type == LabelingType.REMAINING_TIME:
+                # Save mean and std for later use
+                if not self.was_frozen:
+                    self.numerical_scaling_info[self.LABEL_KEY] = {
+                        'mean': df[self.LABEL_KEY].mean(),
+                        'std': df[self.LABEL_KEY].std(ddof=0),
+                    }
+            
+            if self.labeling_type == LabelingType.REMAINING_TIME_CLASSIFICATION:
+                # Cut in bins
+                if not self.was_frozen:
+                    df[self.LABEL_KEY], bins = pd.cut(
+                        df[self.LABEL_KEY],
+                        bins=self.remaining_time_num_bins,
+                        retbins=True,
+                        include_lowest=True,
+                        right=False,
+                        labels=[f'Bin_{i+1}' for i in range(self.remaining_time_num_bins)]
+                    )
+                    df[self.LABEL_KEY] = df[self.LABEL_KEY].astype(str)
+                    self.remaining_time_bins = bins
+                else:
+                    df[self.LABEL_KEY] = pd.cut(
+                        df[self.LABEL_KEY],
+                        bins=self.remaining_time_bins,
+                        include_lowest=True,
+                        right=False,
+                        labels=[f'Bin_{i+1}' for i in range(len(self.remaining_time_bins)-1)]
+                    )
+                    df[self.LABEL_KEY] = df[self.LABEL_KEY].cat.add_categories([self.UNKNOWN_VAL])
+                    df[self.LABEL_KEY] = df[self.LABEL_KEY].fillna(self.UNKNOWN_VAL)
+                    df[self.LABEL_KEY] = df[self.LABEL_KEY].astype(str)
 
         elif self.labeling_type == LabelingType.OUTCOME:
             # Get outcome for each case (from original_df)
@@ -407,6 +434,8 @@ class BaseEncoder(ABC):
         print(f" - Labeling Type: {self.labeling_type}")
         print(f" - Categorical Encoding: {self.categorical_encoding}")
         print(f" - Numerical Scaling Info: {self.numerical_scaling_info}")
+        if self.labeling_type == LabelingType.REMAINING_TIME_CLASSIFICATION:
+            print(f" - Remaining Time Num Bins: {self.remaining_time_num_bins}")
         print(f" - Prefix Length: {self.prefix_length}")
         print(f" - Prefix Strategy: {self.prefix_strategy}")
         print(f" - Timestamp Format: {self.timestamp_format}")
@@ -473,3 +502,19 @@ class BaseEncoder(ABC):
             df[feature_name] = df[feature_name] * self.numerical_scaling_info[feature_name]['std'] + self.numerical_scaling_info[feature_name]['mean']
 
         return df
+    
+    
+    def set_remaining_time_num_bins(self, num_bins: int) -> None:
+        """
+        Set the number of bins to use for remaining time classification. Only works if the encoder has not been frozen yet.
+
+        Args:
+            num_bins (int): Number of bins to use for remaining time classification.
+        """
+        if self.is_frozen:
+            raise RuntimeError("Cannot change remaining time bins after encoder has been frozen.")
+        
+        if not isinstance(num_bins, int) or num_bins <= 0:
+            raise ValueError("num_bins must be a positive integer.")
+        
+        self.remaining_time_num_bins = num_bins
