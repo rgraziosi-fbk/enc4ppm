@@ -14,7 +14,7 @@
       
       
       
-        <link rel="next" href="example/">
+        <link rel="next" href="examples/">
       
       
       <link rel="icon" href="assets/images/favicon.png">
@@ -272,15 +272,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Features
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       Installation
@@ -293,6 +284,15 @@
   <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
       Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
     </span>
   </a>
   
@@ -313,12 +313,12 @@
   
   
     <li class="md-nav__item">
-      <a href="example/" class="md-nav__link">
+      <a href="examples/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Example
+    Examples
     
   </span>
   
@@ -365,6 +365,29 @@
             API Reference
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/base_encoder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    base_encoder
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -469,15 +492,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Features
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     <span class="md-ellipsis">
       Installation
@@ -490,6 +504,15 @@
   <a href="#example" class="md-nav__link">
     <span class="md-ellipsis">
       Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
     </span>
   </a>
   
@@ -516,17 +539,6 @@
 
 <h1 id="encoding-for-predictive-process-monitoring-enc4ppm">Encoding For Predictive Process Monitoring (enc4ppm)</h1>
 <p><code>enc4ppm</code> is a Python package than provides common process mining encodings.</p>
-<p><a href="https://rgraziosi-fbk.github.io/enc4ppm/">Documentation and reference</a>.</p>
-<h2 id="features">Features</h2>
-<ul>
-<li>Frequency, simple-index and complex-index encodings</li>
-<li>Next activity, remaining time and outcome labelings</li>
-<li>Save encoder to disk for later use</li>
-<li>Freeze encoder on training set, then use it on unseen data (automatic handling of unknown values)</li>
-<li>Standardize numerical features</li>
-<li>Convert categorical features to one-hot encoding, or keep them as strings</li>
-<li>Add time features (time since case start and time since last event) to the encoding</li>
-</ul>
 <h2 id="installation">Installation</h2>
 <p>Using pip:</p>
 <pre><code class="language-bash">pip install enc4ppm
@@ -551,6 +563,16 @@ encoder = FrequencyEncoder(
 # Encode log
 encoded_log = encoder.encode(log)
 </code></pre>
+<h2 id="features">Features</h2>
+<ul>
+<li>Frequency, simple-index and complex-index encodings</li>
+<li>Next activity, remaining time and outcome labelings</li>
+<li>Save encoder to disk for later use</li>
+<li>Freeze encoder on training set, then use it on unseen data (automatic handling of unknown values)</li>
+<li>Standardize numerical features</li>
+<li>Convert categorical features to one-hot encoding, or keep them as strings</li>
+<li>Add time features (time since case start and time since last event) to the encoding</li>
+</ul>
 
 
 
