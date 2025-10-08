@@ -4,8 +4,9 @@ site_author: Riccardo Grazioni
 repo_url: https://github.com/rgraziosi-fbk/enc4ppm
 nav:
   - Home: index.md
-  - Example: example.md
+  - Examples: examples.md
   - API Reference:
+      - base_encoder: reference/base_encoder.md
       - frequency_encoder: reference/frequency_encoder.md
       - simple_index_encoder: reference/simple_index_encoder.md
       - complex_index_encoder: reference/complex_index_encoder.md

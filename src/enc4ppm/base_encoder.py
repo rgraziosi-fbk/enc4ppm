@@ -473,7 +473,7 @@ class BaseEncoder(ABC):
             filepath (str): Path to the pickle file to load.
 
         Returns:
-            BaseEncoder: The loaded encoder instance.
+            encoder (BaseEncoder): The loaded encoder instance.
         """
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File '{filepath}' does not exist.")
@@ -488,6 +488,16 @@ class BaseEncoder(ABC):
 
 
     def unscale_numerical_feature(self, df: pd.DataFrame | pd.Series, feature_name: str) -> pd.DataFrame | pd.Series:
+        """
+        Reverts the scaling transformation applied to a numerical feature in a DataFrame or Series.
+        
+        Args:
+            df (pd.DataFrame | pd.Series): The input data containing the scaled feature(s) to be unscaled.
+            feature_name (str): The name of the numerical feature to unscale.
+
+        Returns:
+            df (pd.DataFrame | pd.Series): The DataFrame or Series with the specified feature unscaled.
+        """
         if self.numerical_scaling_info is None or feature_name not in self.numerical_scaling_info:
             raise ValueError(f'Feature {feature_name} has no scaling info available. Available scaling info: {self.numerical_scaling_info}')
         
